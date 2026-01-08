@@ -40,8 +40,8 @@ import { User } from '../../../core/models';
                 <tr class="hover:bg-gray-50">
                   <td class="px-6 py-4 text-sm text-gray-900">{{ user.name }}</td>
                   <td class="px-6 py-4 text-sm text-gray-600">{{ user.email }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600">{{ user.roles.join(', ') }}</td>
-                  <td class="px-6 py-4 text-sm text-gray-600">{{ user.branchName ?? '-' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600">{{ user.roles.join(', ') || '-' }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-600">{{ user.branch?.location ?? '-' }}</td>
                   <td class="px-6 py-4">
                     @if (user.isActive) {
                       <span class="text-xs text-green-600 bg-green-50 px-2 py-1 rounded">Active</span>

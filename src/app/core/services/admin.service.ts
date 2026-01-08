@@ -50,8 +50,8 @@ export class AdminService {
   }
 
   // Branches
-  getBranches(): Observable<ApiResponse<{ id: number; code: string; name: string }[]>> {
-    return this.http.get<ApiResponse<{ id: number; code: string; name: string }[]>>(
+  getBranches(): Observable<ApiResponse<{ id: number; code: string; location: string }[]>> {
+    return this.http.get<ApiResponse<{ id: number; code: string; location: string }[]>>(
       `${environment.apiUrl}/branches`
     );
   }

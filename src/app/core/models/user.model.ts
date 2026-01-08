@@ -8,6 +8,12 @@ export interface AuthResponse {
   permissions: string[];
 }
 
+export interface UserBranch {
+  id: number;
+  code: string;
+  location: string;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -15,19 +21,20 @@ export interface User {
   userType: 'CUSTOMER' | 'INTERNAL';
   isActive: boolean;
   roles: string[];
-  branchId?: number;
-  branchName?: string;
+  branch?: UserBranch;
+  createdAt?: string;
+}
+
+export interface Permission {
+  id: number;
+  code: string;
+  description: string;
 }
 
 export interface Role {
   id: number;
   name: string;
-  permissions: string[];
-}
-
-export interface Permission {
-  id: number;
-  name: string;
+  permissions: Permission[];
 }
 
 export interface CreateUserRequest {

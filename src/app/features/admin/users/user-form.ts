@@ -85,7 +85,7 @@ import { Role, Branch } from '../../../core/models';
             >
               <option [ngValue]="null">Select branch...</option>
               @for (branch of branches(); track branch.id) {
-                <option [ngValue]="branch.id">{{ branch.name }}</option>
+                <option [ngValue]="branch.id">{{ branch.location }} ({{ branch.code }})</option>
               }
             </select>
           </div>
