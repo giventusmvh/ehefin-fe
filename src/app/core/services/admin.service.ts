@@ -21,6 +21,19 @@ export class AdminService {
     return this.http.post<ApiResponse<User>>(`${environment.apiUrl}/admin/users`, request);
   }
 
+  updateUser(
+    id: number,
+    data: { name?: string; email?: string; branchId?: number }
+  ): Observable<ApiResponse<User>> {
+    return this.http.put<ApiResponse<User>>(`${environment.apiUrl}/admin/users/${id}`, data);
+  }
+
+  updateUserStatus(id: number, isActive: boolean): Observable<ApiResponse<User>> {
+    return this.http.patch<ApiResponse<User>>(`${environment.apiUrl}/admin/users/${id}/status`, {
+      isActive,
+    });
+  }
+
   assignRole(userId: number, roleId: number): Observable<ApiResponse<User>> {
     return this.http.post<ApiResponse<User>>(`${environment.apiUrl}/admin/users/${userId}/roles`, {
       roleId,

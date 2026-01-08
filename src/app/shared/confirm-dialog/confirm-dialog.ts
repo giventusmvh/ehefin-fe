@@ -1,0 +1,97 @@
+import { Component, inject } from '@angular/core';
+import { ConfirmDialogService } from '../../core/services/confirm-dialog.service';
+
+@Component({
+  selector: 'app-confirm-dialog',
+  standalone: true,
+  template: `
+    @if (dialogService.isOpen()) {
+      <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-50 animate-fade-in">
+        <div class="bg-white rounded-2xl w-full max-w-sm shadow-2xl animate-scale-in overflow-hidden">
+          <!-- Header with icon -->
+          <div class="p-6 pb-4">
+            <div class="flex items-start gap-4">
+              <!-- Icon based on type -->
+              @switch (dialogService.config()?.type) {
+                @case ('danger') {
+                  <div class="flex-shrink-0 w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                  </div>
+                }
+                @case ('warning') {
+                  <div class="flex-shrink-0 w-12 h-12 rounded-full bg-amber-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                  </div>
+                }
+                @default {
+                  <div class="flex-shrink-0 w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                  </div>
+                }
+              }
+
+              <div class="flex-1 pt-1">
+                <h3 class="text-lg font-semibold text-gray-900">
+                  {{ dialogService.config()?.title }}
+                </h3>
+                <p class="mt-2 text-sm text-gray-600 leading-relaxed">
+                  {{ dialogService.config()?.message }}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="px-6 py-4 bg-gray-50 flex justify-end gap-3">
+            <button
+              (click)="dialogService.close(false)"
+              class="px-4 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+            >
+              {{ dialogService.config()?.cancelText }}
+            </button>
+            <button
+              (click)="dialogService.close(true)"
+              class="px-4 py-2.5 text-sm font-medium text-white rounded-lg transition-colors"
+              [class.bg-red-600]="dialogService.config()?.type === 'danger'"
+              [class.hover:bg-red-700]="dialogService.config()?.type === 'danger'"
+              [class.bg-amber-600]="dialogService.config()?.type === 'warning'"
+              [class.hover:bg-amber-700]="dialogService.config()?.type === 'warning'"
+              [class.bg-blue-600]="dialogService.config()?.type === 'info'"
+              [class.hover:bg-blue-700]="dialogService.config()?.type === 'info'"
+            >
+              {{ dialogService.config()?.confirmText }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+  `,
+  styles: [`
+    .animate-fade-in {
+      animation: fadeIn 0.2s ease-out;
+    }
+    .animate-scale-in {
+      animation: scaleIn 0.2s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes scaleIn {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+  `],
+})
+export class ConfirmDialogComponent {
+  dialogService = inject(ConfirmDialogService);
+}
