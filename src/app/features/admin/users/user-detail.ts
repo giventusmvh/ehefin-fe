@@ -1,26 +1,22 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
 import { User } from '../../../core/models';
-import { environment } from '../../../../environments/environment';
-import { SecureImagePipe } from '../../../shared/pipes/secure-image.pipe';
+import { UserDetailViewComponent } from '../../../shared/components/user-detail-view/user-detail-view';
+
+
 
 @Component({
   selector: 'app-user-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, SecureImagePipe],
+  imports: [CommonModule, RouterLink, UserDetailViewComponent],
   templateUrl: './user-detail.html',
 })
 export default class UserDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
   private adminService = inject(AdminService);
-  private sanitizer = inject(DomSanitizer);
   
-  private apiUrl = environment.apiUrl; 
-  private baseUrl = this.apiUrl.replace('/api', '');
-
   user = signal<User | null>(null);
   loading = signal(false);
   error = signal<string | null>(null);
@@ -51,19 +47,5 @@ export default class UserDetailComponent implements OnInit {
         this.error.set(err.error?.message || 'Failed to load user details');
       }
     });
-  }
-
-  getImageUrl(path: string | null | undefined): string {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    return `${this.baseUrl}${path.startsWith('/') ? '' : '/'}${path}`;
-  }
-
-  sanitize(url: string) {
-    return this.sanitizer.bypassSecurityTrustUrl(url);
-  }
-
-  openImage(url: string) {
-    if (url) window.open(url, '_blank');
   }
 }
