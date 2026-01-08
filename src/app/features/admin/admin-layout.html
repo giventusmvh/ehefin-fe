@@ -1,0 +1,108 @@
+<div class="min-h-screen bg-gray-50 flex flex-col">
+  <!-- Header -->
+  <header class="bg-white border-b border-gray-100 z-40 relative">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center gap-4">
+        <!-- Burger Menu (Mobile only) -->
+        <button 
+          (click)="toggleSidebar()"
+          class="md:hidden p-2 -ml-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+          aria-label="Toggle Menu"
+        >
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+          </svg>
+        </button>
+
+        <div class="flex items-center gap-2 md:gap-6">
+          <span class="text-lg md:text-xl font-semibold text-gray-900">Ehefin</span>
+          <span class="hidden md:inline px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-600">Admin</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <a routerLink="/workplace" class="hidden md:block text-sm text-gray-500 hover:text-gray-700">
+          Workplace
+        </a>
+        <span class="text-sm text-gray-600 truncate max-w-[100px] md:max-w-none">{{ userName() }}</span>
+        <button (click)="logout()" class="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full md:rounded-none md:p-0 md:hover:bg-transparent">
+          <!-- Text on desktop, Icon on mobile -->
+          <span class="hidden md:inline text-sm">Logout</span>
+          <svg class="w-5 h-5 md:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="flex flex-1 max-w-7xl mx-auto w-full px-4 md:px-6 py-4 md:py-8 gap-6 md:gap-8 relative">
+    
+    <!-- Mobile Sidebar Overlay -->
+    @if (isSidebarOpen()) {
+      <div 
+        class="fixed inset-0 bg-black/20 z-20 md:hidden animate-fade-in"
+        (click)="closeSidebar()"
+      ></div>
+    }
+
+    <!-- Sidebar -->
+    <nav 
+      class="fixed inset-y-0 left-0 z-30 w-64 bg-white shadow-2xl transform transition-transform duration-300 ease-in-out md:translate-x-0 md:static md:w-48 md:shadow-none md:bg-transparent md:block"
+      [class.-translate-x-full]="!isSidebarOpen()"
+    >
+      <!-- Mobile Header in Sidebar -->
+      <div class="flex items-center justify-between p-4 border-b border-gray-100 md:hidden bg-white">
+        <span class="font-semibold text-gray-900">Menu</span>
+        <button (click)="closeSidebar()" class="p-2 -mr-2 text-gray-500 hover:text-gray-700">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="p-4 md:p-0 space-y-1 bg-white md:bg-transparent h-full md:h-auto overflow-y-auto">
+        <a
+          routerLink="/admin/users"
+          routerLinkActive="bg-gray-100 text-gray-900"
+          (click)="closeSidebar()"
+          class="block px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          Users
+        </a>
+        <a
+          routerLink="/admin/roles"
+          routerLinkActive="bg-gray-100 text-gray-900"
+          (click)="closeSidebar()"
+          class="block px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          Roles & Permissions
+        </a>
+        <a
+          routerLink="/admin/branches"
+          routerLinkActive="bg-gray-100 text-gray-900"
+          (click)="closeSidebar()"
+          class="block px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+        >
+          Branches
+        </a>
+        
+        <!-- Mobile-only Workplace Link -->
+        <div class="border-t border-gray-100 mt-4 pt-4 md:hidden">
+           <a
+            routerLink="/workplace"
+            (click)="closeSidebar()"
+            class="block px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100 transition-colors"
+          >
+            Go to Workplace
+          </a>
+        </div>
+      </div>
+    </nav>
+
+    <!-- Content -->
+    <div class="flex-1 min-w-0">
+      <router-outlet />
+    </div>
+  </div>
+</div>

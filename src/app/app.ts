@@ -5,10 +5,7 @@ import { ConfirmDialogComponent } from './shared/confirm-dialog/confirm-dialog';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, ConfirmDialogComponent],
-  template: `
-    <router-outlet />
-    <app-confirm-dialog />
-  `,
+  templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
