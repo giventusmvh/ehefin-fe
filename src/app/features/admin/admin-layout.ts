@@ -45,6 +45,13 @@ import { AuthService } from '../../core/services/auth.service';
             >
               Roles & Permissions
             </a>
+            <a
+              routerLink="/admin/branches"
+              routerLinkActive="bg-gray-100 text-gray-900"
+              class="block px-3 py-2 rounded-lg text-sm text-gray-600 hover:bg-gray-100"
+            >
+              Branches
+            </a>
           </nav>
 
           <!-- Content -->

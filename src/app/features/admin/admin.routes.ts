@@ -13,6 +13,7 @@ export default [
         loadComponent: () => import('./users/user-form').then((m) => m.default),
       },
       { path: 'roles', loadComponent: () => import('./roles/role-list').then((m) => m.default) },
+      { path: 'branches', loadComponent: () => import('./branches/branch-list').then((m) => m.default) },
     ],
   },
 ] satisfies Routes;

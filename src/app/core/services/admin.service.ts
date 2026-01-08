@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse, User, Role, Permission, CreateUserRequest } from '../models';
+import { ApiResponse, User, Role, Permission, CreateUserRequest, UserBranch } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -63,9 +63,21 @@ export class AdminService {
   }
 
   // Branches
-  getBranches(): Observable<ApiResponse<{ id: number; code: string; location: string }[]>> {
-    return this.http.get<ApiResponse<{ id: number; code: string; location: string }[]>>(
+  getBranches(): Observable<ApiResponse<UserBranch[]>> {
+    return this.http.get<ApiResponse<UserBranch[]>>(
       `${environment.apiUrl}/branches`
     );
+  }
+
+  createBranch(data: { code: string; location: string }): Observable<ApiResponse<UserBranch>> {
+    return this.http.post<ApiResponse<UserBranch>>(`${environment.apiUrl}/admin/branches`, data);
+  }
+
+  updateBranch(id: number, data: { code: string; location: string }): Observable<ApiResponse<UserBranch>> {
+    return this.http.put<ApiResponse<UserBranch>>(`${environment.apiUrl}/admin/branches/${id}`, data);
+  }
+
+  deleteBranch(id: number): Observable<ApiResponse<null>> {
+    return this.http.delete<ApiResponse<null>>(`${environment.apiUrl}/admin/branches/${id}`);
   }
 }
