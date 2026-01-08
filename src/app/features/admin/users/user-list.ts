@@ -41,7 +41,11 @@ import { User, Role } from '../../../core/models';
             <tbody class="divide-y divide-gray-100">
               @for (user of users(); track user.id) {
                 <tr class="hover:bg-gray-50">
-                  <td class="px-6 py-4 text-sm text-gray-900">{{ user.name }}</td>
+                  <td class="px-6 py-4 text-sm text-gray-900 font-medium hover:text-blue-600">
+                    <a [routerLink]="['/admin/users', user.id]" class="hover:underline">
+                      {{ user.name }}
+                    </a>
+                  </td>
                   <td class="px-6 py-4 text-sm text-gray-600">{{ user.email }}</td>
                   <td class="px-6 py-4 text-sm text-gray-600">
                     <div class="flex flex-wrap gap-1">

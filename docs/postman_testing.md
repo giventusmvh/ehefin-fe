@@ -309,11 +309,12 @@ if (pm.response.code === 201) {
 
 **Body Type:** `form-data`
 
-| Key     | Type | Value                                                                                                                         | Content-Type (Click ... to add) |
-| ------- | ---- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
-| `data`  | Text | `{"nik": "3201234567890001", "birthdate": "1990-05-15", "phone": "081234567890", "address": "Jl. Sudirman No. 123, Jakarta"}` | `application/json`              |
-| `files` | File | (Select File 1)                                                                                                               |                                 |
-| `files` | File | (Select File 2)                                                                                                               |                                 |
+| Key    | Type | Value                                                                                                                         | Content-Type (Click ... to add) |
+| ------ | ---- | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| `data` | Text | `{"nik": "3201234567890001", "birthdate": "1990-05-15", "phone": "081234567890", "address": "Jl. Sudirman No. 123, Jakarta"}` | `application/json`              |
+| `ktp`  | File | (Select KTP File)                                                                                                             |                                 |
+| `kk`   | File | (Select KK File)                                                                                                              |                                 |
+| `npwp` | File | (Select NPWP File)                                                                                                            |                                 |
 
 ```json
 // Success Response (200 OK)
@@ -325,6 +326,9 @@ if (pm.response.code === 201) {
     "birthdate": "1990-05-15",
     "phoneNumber": "+6281234567890",
     "address": "Jl. Sudirman No. 123, Jakarta",
+    "ktpUrl": "http://localhost:8080/uploads/uuid-ktp.jpg",
+    "kkUrl": "http://localhost:8080/uploads/uuid-kk.jpg",
+    "npwpUrl": "http://localhost:8080/uploads/uuid-npwp.jpg",
     "isComplete": true
   },
   "timestamp": "2025-12-22T10:00:00"
@@ -1185,6 +1189,8 @@ if (pm.response.code === 201) {
 }
 ```
 
+---
+
 ### 6.9 Update User
 
 **Endpoint:** `PUT /api/admin/users/{id}`  
@@ -1312,6 +1318,92 @@ if (pm.response.code === 201) {
 3. **Update Profile**: `PUT /api/customer/profile` with complete data
 4. **Select Plafond**: `POST /api/customer/plafond`
 5. **Retry Submit Loan**: Should succeed now
+
+---
+
+### 7.5 Create Branch
+
+**Endpoint:** `POST /api/admin/branches`  
+**Auth:** Bearer Token (SUPERADMIN)
+
+```json
+// Request Body
+{
+  "code": "YGY",
+  "location": "Yogyakarta"
+}
+```
+
+```json
+// Success Response (201 Created)
+{
+  "success": true,
+  "message": "Branch created successfully",
+  "data": {
+    "id": 4,
+    "code": "YGY",
+    "location": "Yogyakarta"
+  },
+  "timestamp": "2025-12-29T10:00:00"
+}
+```
+
+---
+
+### 7.6 Update Branch
+
+**Endpoint:** `PUT /api/admin/branches/{id}`  
+**Auth:** Bearer Token (SUPERADMIN)
+
+```json
+// Request Body
+{
+  "code": "YGY-UPD",
+  "location": "Yogyakarta Updated"
+}
+```
+
+```json
+// Success Response (200 OK)
+{
+  "success": true,
+  "message": "Branch updated successfully",
+  "data": {
+    "id": 4,
+    "code": "YGY-UPD",
+    "location": "Yogyakarta Updated"
+  },
+  "timestamp": "2025-12-29T10:00:00"
+}
+```
+
+---
+
+### 7.7 Delete Branch
+
+**Endpoint:** `DELETE /api/admin/branches/{id}`  
+**Auth:** Bearer Token (SUPERADMIN)
+
+> **Note:** Cannot delete branch if it has assigned users.
+
+```json
+// Success Response (200 OK)
+{
+  "success": true,
+  "message": "Branch deleted successfully",
+  "data": null,
+  "timestamp": "2025-12-29T10:00:00"
+}
+```
+
+```json
+// Error Response - Constraint Violation (409)
+{
+  "success": false,
+  "message": "Cannot delete branch that has assigned users",
+  "timestamp": "2025-12-29T10:00:00"
+}
+```
 
 ---
 

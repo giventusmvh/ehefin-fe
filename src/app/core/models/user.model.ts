@@ -14,6 +14,19 @@ export interface UserBranch {
   location: string;
 }
 
+
+export interface UserProfile {
+  id: number;
+  birthdate: string;
+  phone: string;
+  address: string;
+  nik: string;
+  isComplete: boolean;
+  ktpUrl: string | null;
+  kkUrl: string | null;
+  npwpUrl: string | null;
+}
+
 export interface User {
   id: number;
   name: string;
@@ -22,6 +35,7 @@ export interface User {
   isActive: boolean;
   roles: string[];
   branch?: UserBranch;
+  profile?: UserProfile;
   createdAt?: string;
 }
 
