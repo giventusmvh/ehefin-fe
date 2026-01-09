@@ -16,10 +16,16 @@ export interface LoanApplication {
   customerPhone?: string;
   customerAddress?: string;
   customerBirthdate?: string;
-  productId: number;
-  productName: string;
-  branchId: number;
-  branchName: string;
+  customerKtpPath?: string;
+  customerKkPath?: string;
+  customerNpwpPath?: string;
+  // Backend may return flat fields OR nested objects
+  productId?: number;
+  productName?: string;
+  product?: Product;
+  branchId?: number;
+  branchName?: string;
+  branch?: Branch;
   requestedAmount: number;
   requestedTenor: number;
   requestedRate: number;
@@ -53,4 +59,16 @@ export interface Branch {
 
 export interface ApprovalRequest {
   note?: string;
+}
+
+export interface ApprovalHistoryItem {
+  id: number;
+  loanId: number;
+  customerName: string;
+  productName: string;
+  loanAmount: number;
+  branchLocation: string;
+  actionTaken: LoanStatus;
+  note?: string;
+  actionDate: string;
 }

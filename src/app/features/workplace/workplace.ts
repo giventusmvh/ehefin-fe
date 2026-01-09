@@ -1,30 +1,32 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
+import { isPlatformBrowser, AsyncPipe, DatePipe } from '@angular/common';
+import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApprovalService } from '../../core/services/approval.service';
-import { LoanApplication, LoanHistory, User } from '../../core/models';
-import { AdminService } from '../../core/services/admin.service';
-
-
-import { UserDetailViewComponent } from '../../shared/components/user-detail-view/user-detail-view';
+import { LoanApplication, LoanHistory, ApprovalHistoryItem } from '../../core/models';
+import { SecureImagePipe } from '../../shared/pipes/secure-image.pipe';
 
 @Component({
   selector: 'app-workplace',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, UserDetailViewComponent],
+  imports: [FormsModule, AsyncPipe, DatePipe, SecureImagePipe],
   templateUrl: './workplace.html',
 })
 export default class WorkplaceComponent implements OnInit {
   private authService = inject(AuthService);
   private approvalService = inject(ApprovalService);
-  private adminService = inject(AdminService);
+  private sanitizer = inject(DomSanitizer);
   private router = inject(Router);
 
   private platformId = inject(PLATFORM_ID);
 
+  // Tab state: 'pending' or 'history'
+  activeTab = signal<'pending' | 'history'>('pending');
+
+  // Pending loans
   loans = signal<LoanApplication[]>([]);
   selectedLoan = signal<LoanApplication | null>(null);
   history = signal<LoanHistory[]>([]);
@@ -32,10 +34,10 @@ export default class WorkplaceComponent implements OnInit {
   actionLoading = signal(false);
   note = '';
 
-  // Modal
-  showDetailModal = signal(false);
-  detailUser = signal<User | null>(null);
-  detailLoading = signal(false);
+  // Approval history
+  approvalHistory = signal<ApprovalHistoryItem[]>([]);
+  historyLoading = signal(false);
+  selectedHistoryItem = signal<ApprovalHistoryItem | null>(null);
 
   userName = computed(() => this.authService.user()?.name ?? '');
   roleName = computed(() => {
@@ -53,6 +55,22 @@ export default class WorkplaceComponent implements OnInit {
     }
   }
 
+  switchTab(tab: 'pending' | 'history') {
+    this.activeTab.set(tab);
+    this.selectedLoan.set(null);
+    this.selectedHistoryItem.set(null);
+    this.history.set([]);
+    if (tab === 'pending') {
+      this.loadPendingLoans();
+    } else {
+      this.loadApprovalHistory();
+    }
+  }
+
+  selectHistoryItem(item: ApprovalHistoryItem) {
+    this.selectedHistoryItem.set(item);
+  }
+
   loadPendingLoans() {
     if (!isPlatformBrowser(this.platformId)) return;
     this.loading.set(true);
@@ -67,22 +85,35 @@ export default class WorkplaceComponent implements OnInit {
     });
   }
 
+  loadApprovalHistory() {
+    if (!isPlatformBrowser(this.platformId)) return;
+    this.historyLoading.set(true);
+    this.approvalService.getMyApprovalHistory().subscribe({
+      next: (res) => {
+        this.approvalHistory.set(res.data ?? []);
+        this.historyLoading.set(false);
+      },
+      error: () => {
+        this.historyLoading.set(false);
+      },
+    });
+  }
+
   selectLoan(loan: LoanApplication) {
     this.selectedLoan.set(loan);
     this.note = '';
     
-    // Load full loan details (to get customerId)
+    // Load full loan details (to get document paths)
     this.approvalService.getLoanById(loan.id)
       .pipe(
         catchError(err => {
-          console.warn('Failed to load full details (likely permission issue):', err);
+          console.warn('Failed to load full details:', err);
           return of({ data: null });
         })
       )
       .subscribe({
         next: (res) => {
           if (res?.data) {
-            console.log('Full Loan Details:', res.data);
             this.selectedLoan.set(res.data);
           }
         }
@@ -92,6 +123,7 @@ export default class WorkplaceComponent implements OnInit {
   }
 
   private loadHistory(id: number) {
+    console.log('Loading history for loan:', id);
     this.approvalService.getLoanHistory(id)
       .pipe(
         catchError(err => {
@@ -101,6 +133,7 @@ export default class WorkplaceComponent implements OnInit {
       )
       .subscribe({
         next: (res) => {
+          console.log('History loaded:', res?.data);
           this.history.set(res?.data ?? []);
         },
       });
@@ -157,22 +190,26 @@ export default class WorkplaceComponent implements OnInit {
     }).format(amount);
   }
 
-  openDetailModal(customerId: number) {
-    this.showDetailModal.set(true);
-    this.detailLoading.set(true);
-    this.adminService.getUser(customerId).subscribe({
-      next: (res) => {
-        this.detailUser.set(res.data ?? null);
-        this.detailLoading.set(false);
-      },
-      error: () => {
-        this.detailLoading.set(false);
-      }
-    });
+  // Image helper methods
+  getImageUrl(path: string | null | undefined): string {
+    if (!path) return '';
+    if (path.startsWith('http')) return path;
+    // If path already starts with /uploads, use as-is
+    if (path.startsWith('/uploads')) return path;
+    // If path starts with /, prepend /uploads
+    if (path.startsWith('/')) return `/uploads${path}`;
+    // Otherwise, assume it's just a filename and prepend /uploads/
+    const url = `/uploads/${path}`;
+    //console.log('Document path:', path, '-> URL:', url);
+    return url;
   }
 
-  closeDetailModal() {
-    this.showDetailModal.set(false);
-    this.detailUser.set(null);
+  sanitize(url: string) {
+    return this.sanitizer.bypassSecurityTrustUrl(url);
+  }
+
+  openImage(url: string) {
+    if (url) window.open(url, '_blank');
   }
 }
+

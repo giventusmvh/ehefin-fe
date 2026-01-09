@@ -17,10 +17,15 @@ export class SecureImagePipe implements PipeTransform {
       return of('');
     }
 
+    //console.log('SecureImagePipe fetching:', url);
     return this.http.get(url, { responseType: 'blob' }).pipe(
-      map(blob => URL.createObjectURL(blob)),
+      map(blob => {
+        const objectUrl = URL.createObjectURL(blob);
+        //console.log('SecureImagePipe created blob URL:', objectUrl);
+        return objectUrl;
+      }),
       catchError(err => {
-        console.error('Error fetching image:', err);
+        //console.error('SecureImagePipe error fetching image:', url, err);
         return of('');
       })
     );

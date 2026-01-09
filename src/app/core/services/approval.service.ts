@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse, LoanApplication, LoanHistory, ApprovalRequest } from '../models';
+import { ApiResponse, LoanApplication, LoanHistory, ApprovalRequest, ApprovalHistoryItem } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class ApprovalService {
@@ -10,6 +10,10 @@ export class ApprovalService {
 
   getPendingLoans(): Observable<ApiResponse<LoanApplication[]>> {
     return this.http.get<ApiResponse<LoanApplication[]>>(`${environment.apiUrl}/approval/pending`);
+  }
+
+  getMyApprovalHistory(): Observable<ApiResponse<ApprovalHistoryItem[]>> {
+    return this.http.get<ApiResponse<ApprovalHistoryItem[]>>(`${environment.apiUrl}/approval/my-history`);
   }
 
   getLoanById(id: number): Observable<ApiResponse<LoanApplication>> {

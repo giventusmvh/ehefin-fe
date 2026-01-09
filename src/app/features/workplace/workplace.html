@@ -21,48 +21,131 @@
 
   <div class="max-w-7xl mx-auto px-6 py-8">
     <div class="flex gap-8">
-      <!-- Loan List -->
+      <!-- Sidebar with Tabs -->
       <div class="flex-1">
-        <div class="flex items-center justify-between mb-6">
-          <h1 class="text-xl font-semibold text-gray-900">Pending Loans</h1>
+        <!-- Tab Buttons -->
+        <div class="flex border-b border-gray-200 mb-6">
           <button
-            (click)="loadPendingLoans()"
-            class="text-sm text-gray-500 hover:text-gray-700"
+            (click)="switchTab('pending')"
+            class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            [class.border-gray-900]="activeTab() === 'pending'"
+            [class.text-gray-900]="activeTab() === 'pending'"
+            [class.border-transparent]="activeTab() !== 'pending'"
+            [class.text-gray-500]="activeTab() !== 'pending'"
+            [class.hover:text-gray-700]="activeTab() !== 'pending'"
           >
-            Refresh
+            Pending Loans
+          </button>
+          <button
+            (click)="switchTab('history')"
+            class="px-4 py-2 text-sm font-medium border-b-2 transition-colors"
+            [class.border-gray-900]="activeTab() === 'history'"
+            [class.text-gray-900]="activeTab() === 'history'"
+            [class.border-transparent]="activeTab() !== 'history'"
+            [class.text-gray-500]="activeTab() !== 'history'"
+            [class.hover:text-gray-700]="activeTab() !== 'history'"
+          >
+            My History
           </button>
         </div>
 
-        @if (loading()) {
-          <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
-            Loading...
+        <!-- Pending Loans Tab Content -->
+        @if (activeTab() === 'pending') {
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium text-gray-900">Pending Approvals</h2>
+            <button
+              (click)="loadPendingLoans()"
+              class="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Refresh
+            </button>
           </div>
-        } @else if (loans().length === 0) {
-          <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
-            Tidak ada loan yang menunggu approval
-          </div>
-        } @else {
-          <div class="space-y-3">
-            @for (loan of loans(); track loan.id) {
-              <button
-                (click)="selectLoan(loan)"
-                class="w-full text-left bg-white rounded-xl border p-4 hover:border-gray-300 transition-colors"
-                [class.border-gray-900]="selectedLoan()?.id === loan.id"
-                [class.border-gray-100]="selectedLoan()?.id !== loan.id"
-              >
-                <div class="flex items-center justify-between">
-                  <div>
-                    <p class="font-medium text-gray-900">{{ loan.customerName }}</p>
-                    <p class="text-sm text-gray-500 mt-1">{{ loan.branchName }} • {{ loan.productName }}</p>
+
+          @if (loading()) {
+            <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
+              Loading...
+            </div>
+          } @else if (loans().length === 0) {
+            <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
+              Tidak ada loan yang menunggu approval
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (loan of loans(); track loan.id) {
+                <button
+                  (click)="selectLoan(loan)"
+                  class="w-full text-left bg-white rounded-xl border p-4 hover:border-gray-300 transition-colors"
+                  [class.border-gray-900]="selectedLoan()?.id === loan.id"
+                  [class.border-gray-100]="selectedLoan()?.id !== loan.id"
+                >
+                  <div class="flex items-center justify-between">
+                    <div>
+                      <p class="font-medium text-gray-900">{{ loan.customerName }}</p>
+                      <p class="text-sm text-gray-500 mt-1">{{ loan.branchName || loan.branch?.location }} • {{ loan.productName || loan.product?.name }}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-medium text-gray-900">{{ formatCurrency(loan.requestedAmount) }}</p>
+                      <p class="text-sm text-gray-500 mt-1">{{ loan.requestedTenor }} bulan</p>
+                    </div>
                   </div>
-                  <div class="text-right">
-                    <p class="font-medium text-gray-900">{{ formatCurrency(loan.requestedAmount) }}</p>
-                    <p class="text-sm text-gray-500 mt-1">{{ loan.requestedTenor }} bulan</p>
-                  </div>
-                </div>
-              </button>
-            }
+                </button>
+              }
+            </div>
+          }
+        }
+
+        <!-- My History Tab Content -->
+        @if (activeTab() === 'history') {
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-lg font-medium text-gray-900">My Approval History</h2>
+            <button
+              (click)="loadApprovalHistory()"
+              class="text-sm text-gray-500 hover:text-gray-700"
+            >
+              Refresh
+            </button>
           </div>
+
+          @if (historyLoading()) {
+            <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
+              Loading...
+            </div>
+          } @else if (approvalHistory().length === 0) {
+            <div class="bg-white rounded-xl border border-gray-100 p-8 text-center text-gray-400">
+              Belum ada riwayat approval
+            </div>
+          } @else {
+            <div class="space-y-3">
+              @for (item of approvalHistory(); track item.id) {
+                <button
+                  (click)="selectHistoryItem(item)"
+                  class="w-full text-left bg-white rounded-xl border p-4 hover:border-gray-300 transition-colors"
+                  [class.border-gray-900]="selectedHistoryItem()?.id === item.id"
+                  [class.border-gray-100]="selectedHistoryItem()?.id !== item.id"
+                >
+                  <div class="flex items-start justify-between">
+                    <div>
+                      <p class="font-medium text-gray-900">{{ item.customerName }}</p>
+                      <p class="text-sm text-gray-500 mt-1">{{ item.productName }} • {{ item.branchLocation }}</p>
+                    </div>
+                    <div class="text-right">
+                      <p class="font-medium text-gray-900">{{ formatCurrency(item.loanAmount) }}</p>
+                      <span 
+                        class="inline-block mt-1 px-2 py-0.5 rounded text-xs font-medium"
+                        [class.bg-green-100]="item.actionTaken.includes('APPROVED')"
+                        [class.text-green-700]="item.actionTaken.includes('APPROVED')"
+                        [class.bg-red-100]="item.actionTaken.includes('REJECTED')"
+                        [class.text-red-700]="item.actionTaken.includes('REJECTED')"
+                      >
+                        {{ item.actionTaken }}
+                      </span>
+                    </div>
+                  </div>
+                  <p class="text-xs text-gray-400 mt-2">{{ item.actionDate | date:'dd MMM yyyy HH:mm' }}</p>
+                </button>
+              }
+            </div>
+          }
         }
       </div>
 
@@ -75,17 +158,7 @@
             <div class="space-y-3 text-sm">
               <div class="flex justify-between">
                 <span class="text-gray-500">Customer</span>
-                <span class="text-gray-900 flex items-center gap-2">
-                  {{ selectedLoan()!.customerName }}
-                  @if (selectedLoan()?.customerId) {
-                    <button 
-                      (click)="openDetailModal(selectedLoan()!.customerId)"
-                      class="text-xs text-blue-600 hover:text-blue-800 font-medium hover:underline"
-                    >
-                      View Detail
-                    </button>
-                  }
-                </span>
+                <span class="text-gray-900 font-medium">{{ selectedLoan()!.customerName }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Email</span>
@@ -101,7 +174,7 @@
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Produk</span>
-                <span class="text-gray-900">{{ selectedLoan()!.productName }}</span>
+                <span class="text-gray-900">{{ selectedLoan()!.productName || selectedLoan()!.product?.name || '-' }}</span>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500">Jumlah</span>
@@ -121,15 +194,106 @@
               </div>
             </div>
 
+            <!-- Documents -->
+            @if (selectedLoan()!.customerKtpPath || selectedLoan()!.customerKkPath || selectedLoan()!.customerNpwpPath) {
+              <div class="mt-6 pt-6 border-t border-gray-100">
+                <h3 class="text-sm font-medium text-gray-900 mb-3">Dokumen</h3>
+                <div class="grid grid-cols-3 gap-2">
+                  <!-- KTP -->
+                  <div class="text-center">
+                    <span class="text-xs text-gray-500 block mb-1">KTP</span>
+                    @if (selectedLoan()!.customerKtpPath) {
+                      @if (getImageUrl(selectedLoan()!.customerKtpPath!) | secureImage | async; as ktpSrc) {
+                        <img 
+                          [src]="sanitize(ktpSrc)" 
+                          alt="KTP" 
+                          class="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                          (click)="openImage(ktpSrc)"
+                        />
+                      } @else {
+                        <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center">
+                          <div class="animate-pulse w-full h-full bg-gray-200 rounded"></div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center text-gray-400 text-xs">-</div>
+                    }
+                  </div>
+                  <!-- KK -->
+                  <div class="text-center">
+                    <span class="text-xs text-gray-500 block mb-1">KK</span>
+                    @if (selectedLoan()!.customerKkPath) {
+                      @if (getImageUrl(selectedLoan()!.customerKkPath!) | secureImage | async; as kkSrc) {
+                        <img 
+                          [src]="sanitize(kkSrc)" 
+                          alt="KK" 
+                          class="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                          (click)="openImage(kkSrc)"
+                        />
+                      } @else {
+                        <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center">
+                          <div class="animate-pulse w-full h-full bg-gray-200 rounded"></div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center text-gray-400 text-xs">-</div>
+                    }
+                  </div>
+                  <!-- NPWP -->
+                  <div class="text-center">
+                    <span class="text-xs text-gray-500 block mb-1">NPWP</span>
+                    @if (selectedLoan()!.customerNpwpPath) {
+                      @if (getImageUrl(selectedLoan()!.customerNpwpPath!) | secureImage | async; as npwpSrc) {
+                        <img 
+                          [src]="sanitize(npwpSrc)" 
+                          alt="NPWP" 
+                          class="w-full h-20 object-cover rounded border cursor-pointer hover:opacity-80 transition-opacity"
+                          (click)="openImage(npwpSrc)"
+                        />
+                      } @else {
+                        <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center">
+                          <div class="animate-pulse w-full h-full bg-gray-200 rounded"></div>
+                        </div>
+                      }
+                    } @else {
+                      <div class="w-full h-20 bg-gray-100 rounded border flex items-center justify-center text-gray-400 text-xs">-</div>
+                    }
+                  </div>
+                </div>
+              </div>
+            }
+
             <!-- History -->
             @if (history().length > 0) {
               <div class="mt-6 pt-6 border-t border-gray-100">
                 <h3 class="text-sm font-medium text-gray-900 mb-3">History</h3>
-                <div class="space-y-2">
+                <div class="space-y-3">
                   @for (h of history(); track h.id) {
-                    <div class="text-xs">
-                      <p class="text-gray-900">{{ h.status }}</p>
-                      <p class="text-gray-400">{{ h.approvedBy }} - {{ h.approvedByRole }}</p>
+                    <div class="text-xs border-l-2 pl-3 py-1"
+                      [class.border-blue-400]="h.approvedByRole === 'MARKETING'"
+                      [class.border-green-400]="h.approvedByRole === 'BRANCH_MANAGER'"
+                      [class.border-purple-400]="h.approvedByRole === 'BACKOFFICE'"
+                      [class.border-gray-300]="h.approvedByRole !== 'MARKETING' && h.approvedByRole !== 'BRANCH_MANAGER' && h.approvedByRole !== 'BACKOFFICE'"
+                    >
+                      <div class="flex items-center gap-2 mb-1">
+                        <span class="font-medium text-gray-900">{{ h.status }}</span>
+                        <span class="px-1.5 py-0.5 rounded text-[10px] font-medium"
+                          [class.bg-blue-100]="h.approvedByRole === 'MARKETING'"
+                          [class.text-blue-700]="h.approvedByRole === 'MARKETING'"
+                          [class.bg-green-100]="h.approvedByRole === 'BRANCH_MANAGER'"
+                          [class.text-green-700]="h.approvedByRole === 'BRANCH_MANAGER'"
+                          [class.bg-purple-100]="h.approvedByRole === 'BACKOFFICE'"
+                          [class.text-purple-700]="h.approvedByRole === 'BACKOFFICE'"
+                          [class.bg-gray-100]="h.approvedByRole !== 'MARKETING' && h.approvedByRole !== 'BRANCH_MANAGER' && h.approvedByRole !== 'BACKOFFICE'"
+                          [class.text-gray-700]="h.approvedByRole !== 'MARKETING' && h.approvedByRole !== 'BRANCH_MANAGER' && h.approvedByRole !== 'BACKOFFICE'"
+                        >
+                          {{ h.approvedByRole }}
+                        </span>
+                      </div>
+                      <p class="text-gray-500">{{ h.approvedBy }}</p>
+                      @if (h.note) {
+                        <p class="text-gray-700 mt-1 italic">"{{ h.note }}"</p>
+                      }
                     </div>
                   }
                 </div>
@@ -166,9 +330,60 @@
               </div>
             </div>
           </div>
+        } @else if (selectedHistoryItem()) {
+          <!-- History Item Detail (read-only) -->
+          <div class="bg-white rounded-xl border border-gray-100 p-6 sticky top-8">
+            <h2 class="font-semibold text-gray-900 mb-4">Detail Approval</h2>
+            
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between">
+                <span class="text-gray-500">Customer</span>
+                <span class="text-gray-900 font-medium">{{ selectedHistoryItem()!.customerName }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Produk</span>
+                <span class="text-gray-900">{{ selectedHistoryItem()!.productName }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Cabang</span>
+                <span class="text-gray-900">{{ selectedHistoryItem()!.branchLocation }}</span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Jumlah</span>
+                <span class="text-gray-900 font-medium">{{ formatCurrency(selectedHistoryItem()!.loanAmount) }}</span>
+              </div>
+              <div class="flex justify-between items-center">
+                <span class="text-gray-500">Status</span>
+                <span 
+                  class="px-2 py-0.5 rounded text-xs font-medium"
+                  [class.bg-green-100]="selectedHistoryItem()!.actionTaken.includes('APPROVED')"
+                  [class.text-green-700]="selectedHistoryItem()!.actionTaken.includes('APPROVED')"
+                  [class.bg-red-100]="selectedHistoryItem()!.actionTaken.includes('REJECTED')"
+                  [class.text-red-700]="selectedHistoryItem()!.actionTaken.includes('REJECTED')"
+                >
+                  {{ selectedHistoryItem()!.actionTaken }}
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="text-gray-500">Tanggal</span>
+                <span class="text-gray-900">{{ selectedHistoryItem()!.actionDate | date:'dd MMM yyyy HH:mm' }}</span>
+              </div>
+            </div>
+
+            @if (selectedHistoryItem()!.note) {
+              <div class="mt-4 pt-4 border-t border-gray-100">
+                <p class="text-sm text-gray-500 mb-2">Catatan:</p>
+                <p class="text-sm text-gray-700 italic bg-gray-50 p-3 rounded-lg">"{{ selectedHistoryItem()!.note }}"</p>
+              </div>
+            }
+          </div>
         } @else {
           <div class="bg-white rounded-xl border border-gray-100 p-6 text-center text-gray-400">
-            Pilih loan untuk melihat detail
+            @if (activeTab() === 'pending') {
+              Pilih loan untuk melihat detail
+            } @else {
+              Pilih riwayat untuk melihat detail
+            }
           </div>
         }
       </div>
@@ -176,50 +391,3 @@
   </div>
   </div>
 
-<!-- Customer Detail Modal -->
-@if (showDetailModal()) {
-  <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      
-      <!-- Backdrop -->
-      <div 
-        class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" 
-        aria-hidden="true"
-        (click)="closeDetailModal()"
-      ></div>
-
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-      <!-- Modal Panel -->
-      <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-        <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-          <div class="flex justify-between items-center mb-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-              Customer Details
-            </h3>
-            <button 
-              (click)="closeDetailModal()"
-              class="bg-white rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-            >
-              <span class="sr-only">Close</span>
-              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          
-          <div class="mt-2 max-h-[70vh] overflow-y-auto px-1">
-            @if (detailLoading()) {
-              <div class="text-center py-12">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-gray-900"></div>
-                <p class="mt-2 text-gray-500">Loading details...</p>
-              </div>
-            } @else if (detailUser()) {
-              <app-user-detail-view [user]="detailUser()!" />
-            }
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-}
