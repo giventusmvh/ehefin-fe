@@ -21,6 +21,10 @@ export const routes: Routes = [
     loadChildren: () => import('./features/admin/admin.routes'),
   },
   {
+    path: 'forbidden',
+    loadComponent: () => import('./shared/components/forbidden/forbidden'),
+  },
+  {
     path: '**',
     redirectTo: '',
   },

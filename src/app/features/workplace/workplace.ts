@@ -7,7 +7,8 @@ import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApprovalService } from '../../core/services/approval.service';
 import { LoanApplication, LoanHistory, ApprovalHistoryItem } from '../../core/models';
-import { SecureImagePipe } from '../../shared/pipes/secure-image.pipe';
+import { SecureImagePipe } from '../../shared/pipes';
+import { formatCurrency, getImageUrl, openImageInNewTab } from '../../shared/utils';
 
 @Component({
   selector: 'app-workplace',
@@ -105,35 +106,23 @@ export default class WorkplaceComponent implements OnInit {
     
     // Load full loan details (to get document paths)
     this.approvalService.getLoanById(loan.id)
-      .pipe(
-        catchError(err => {
-          console.warn('Failed to load full details:', err);
-          return of({ data: null });
-        })
-      )
+      .pipe(catchError(() => of({ data: null })))
       .subscribe({
         next: (res) => {
           if (res?.data) {
             this.selectedLoan.set(res.data);
           }
-        }
+        },
       });
 
     this.loadHistory(loan.id);
   }
 
   private loadHistory(id: number) {
-    console.log('Loading history for loan:', id);
     this.approvalService.getLoanHistory(id)
-      .pipe(
-        catchError(err => {
-          console.warn('Failed to load history:', err);
-          return of({ data: [] });
-        })
-      )
+      .pipe(catchError(() => of({ data: [] })))
       .subscribe({
         next: (res) => {
-          console.log('History loaded:', res?.data);
           this.history.set(res?.data ?? []);
         },
       });
@@ -182,34 +171,13 @@ export default class WorkplaceComponent implements OnInit {
     });
   }
 
-  formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('id-ID', {
-      style: 'currency',
-      currency: 'IDR',
-      minimumFractionDigits: 0,
-    }).format(amount);
-  }
-
-  // Image helper methods
-  getImageUrl(path: string | null | undefined): string {
-    if (!path) return '';
-    if (path.startsWith('http')) return path;
-    // If path already starts with /uploads, use as-is
-    if (path.startsWith('/uploads')) return path;
-    // If path starts with /, prepend /uploads
-    if (path.startsWith('/')) return `/uploads${path}`;
-    // Otherwise, assume it's just a filename and prepend /uploads/
-    const url = `/uploads/${path}`;
-    //console.log('Document path:', path, '-> URL:', url);
-    return url;
-  }
+  // Utility methods (using shared functions)
+  formatCurrency = formatCurrency;
+  getImageUrl = getImageUrl;
+  openImage = openImageInNewTab;
 
   sanitize(url: string) {
     return this.sanitizer.bypassSecurityTrustUrl(url);
-  }
-
-  openImage(url: string) {
-    if (url) window.open(url, '_blank');
   }
 }
 

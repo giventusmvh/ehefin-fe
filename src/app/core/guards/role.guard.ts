@@ -18,7 +18,7 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
       return true;
     }
 
-    router.navigate(['/']);
+    router.navigate(['/forbidden']);
     return false;
   };
 }

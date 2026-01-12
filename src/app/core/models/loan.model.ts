@@ -4,7 +4,7 @@ export type LoanStatus =
   | 'MARKETING_REJECTED'
   | 'BRANCH_MANAGER_APPROVED'
   | 'BRANCH_MANAGER_REJECTED'
-  | 'APPROVED'
+  | 'DISBURSED'
   | 'REJECTED';
 
 export interface LoanApplication {
@@ -69,6 +69,7 @@ export interface ApprovalHistoryItem {
   loanAmount: number;
   branchLocation: string;
   actionTaken: LoanStatus;
+  currentStatus?: LoanStatus; // Current/latest status of the loan (optional for backward compatibility)
   note?: string;
   actionDate: string;
 }
