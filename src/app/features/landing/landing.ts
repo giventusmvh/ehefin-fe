@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
+
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../../environments/environment';
 import { ApiResponse, Product } from '../../core/models';
@@ -7,7 +7,7 @@ import { ApiResponse, Product } from '../../core/models';
 @Component({
   selector: 'app-landing',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink],
+  imports: [],
   templateUrl: './landing.html',
 })
 export default class LandingComponent implements OnInit {

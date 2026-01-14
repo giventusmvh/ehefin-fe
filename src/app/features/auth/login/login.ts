@@ -44,7 +44,7 @@ export default class LoginComponent {
   }
 
   private redirectBasedOnRole(roles: string[]) {
-    if (roles.includes('SUPERADMIN')) {
+    if (roles.includes('SUPERADMIN') || roles.includes('ADMIN')) {
       this.router.navigate(['/admin']);
     } else if (
       roles.includes('MARKETING') ||

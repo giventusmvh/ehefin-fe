@@ -91,4 +91,22 @@ export class AuthService {
     this._token.set(null);
     this._user.set(null);
   }
+
+  forgotPassword(email: string): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/auth/forgot-password`, {
+      email,
+    });
+  }
+
+  resetPassword(
+    token: string,
+    newPassword: string,
+    confirmPassword: string
+  ): Observable<ApiResponse<void>> {
+    return this.http.post<ApiResponse<void>>(`${environment.apiUrl}/auth/reset-password`, {
+      token,
+      newPassword,
+      confirmPassword,
+    });
+  }
 }

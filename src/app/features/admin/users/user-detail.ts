@@ -2,6 +2,7 @@ import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@ang
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AdminService } from '../../../core/services/admin.service';
+import { UserService } from '../../../core/services/user.service';
 import { User } from '../../../core/models';
 import { UserDetailViewComponent } from '../../../shared/components/user-detail-view/user-detail-view';
 
@@ -15,7 +16,7 @@ import { UserDetailViewComponent } from '../../../shared/components/user-detail-
 })
 export default class UserDetailComponent implements OnInit {
   private route = inject(ActivatedRoute);
-  private adminService = inject(AdminService);
+  private userService = inject(UserService);
   
   user = signal<User | null>(null);
   loading = signal(false);
@@ -37,7 +38,7 @@ export default class UserDetailComponent implements OnInit {
 
   private loadUser(id: number) {
     this.loading.set(true);
-    this.adminService.getUser(id).subscribe({
+    this.userService.getUser(id).subscribe({
       next: (res) => {
         this.user.set(res.data ?? null);
         this.loading.set(false);
