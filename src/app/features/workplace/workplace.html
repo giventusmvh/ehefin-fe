@@ -431,9 +431,22 @@
                     </span>
                   </div>
                    @if (selectedHistoryItem()!.currentStatus) {
-                    <div class="flex justify-between items-center">
+                    <div class="flex justify-between items-center mt-2">
                       <span class="text-sm text-gray-500">Current Status</span>
-                      <span class="text-sm font-medium text-gray-900">{{ selectedHistoryItem()!.currentStatus }}</span>
+                      <span 
+                        class="px-2.5 py-1 rounded-lg text-xs font-medium border"
+                        [class.bg-green-50]="selectedHistoryItem()!.currentStatus!.includes('APPROVED') || selectedHistoryItem()!.currentStatus === 'DISBURSED'"
+                        [class.text-green-700]="selectedHistoryItem()!.currentStatus!.includes('APPROVED') || selectedHistoryItem()!.currentStatus === 'DISBURSED'"
+                        [class.border-green-100]="selectedHistoryItem()!.currentStatus!.includes('APPROVED') || selectedHistoryItem()!.currentStatus === 'DISBURSED'"
+                        [class.bg-red-50]="selectedHistoryItem()!.currentStatus!.includes('REJECTED')"
+                        [class.text-red-700]="selectedHistoryItem()!.currentStatus!.includes('REJECTED')"
+                        [class.border-red-100]="selectedHistoryItem()!.currentStatus!.includes('REJECTED')"
+                        [class.bg-gray-50]="!selectedHistoryItem()!.currentStatus!.includes('APPROVED') && !selectedHistoryItem()!.currentStatus!.includes('REJECTED') && selectedHistoryItem()!.currentStatus !== 'DISBURSED'"
+                        [class.text-gray-700]="!selectedHistoryItem()!.currentStatus!.includes('APPROVED') && !selectedHistoryItem()!.currentStatus!.includes('REJECTED') && selectedHistoryItem()!.currentStatus !== 'DISBURSED'"
+                        [class.border-gray-200]="!selectedHistoryItem()!.currentStatus!.includes('APPROVED') && !selectedHistoryItem()!.currentStatus!.includes('REJECTED') && selectedHistoryItem()!.currentStatus !== 'DISBURSED'"
+                      >
+                        {{ selectedHistoryItem()!.currentStatus }}
+                      </span>
                     </div>
                    }
                    <div class="flex justify-between items-center mt-3 pt-3 border-t border-gray-100">
