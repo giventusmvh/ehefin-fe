@@ -19,6 +19,10 @@ export interface LoanApplication {
   customerKtpPath?: string;
   customerKkPath?: string;
   customerNpwpPath?: string;
+  // Customer bank account snapshot
+  customerBankName?: string;
+  customerAccountNumber?: string;
+  customerAccountHolderName?: string;
   // Backend may return flat fields OR nested objects
   productId?: number;
   productName?: string;

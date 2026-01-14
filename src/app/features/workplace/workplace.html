@@ -275,6 +275,31 @@
                  </div>
               </div>
 
+              <!-- Bank Account Info -->
+              @if (selectedLoan()!.customerBankName || selectedLoan()!.customerAccountNumber) {
+                <div class="bg-white/50 rounded-xl p-4 space-y-2">
+                  <div class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Bank Account</div>
+                  @if (selectedLoan()!.customerBankName) {
+                    <div class="flex justify-between items-center py-1">
+                      <span class="text-sm text-gray-500">Bank</span>
+                      <span class="text-sm font-semibold text-gray-900">{{ selectedLoan()!.customerBankName }}</span>
+                    </div>
+                  }
+                  @if (selectedLoan()!.customerAccountNumber) {
+                    <div class="flex justify-between items-center py-1">
+                      <span class="text-sm text-gray-500">Account #</span>
+                      <span class="text-sm font-mono text-gray-900">{{ selectedLoan()!.customerAccountNumber }}</span>
+                    </div>
+                  }
+                  @if (selectedLoan()!.customerAccountHolderName) {
+                    <div class="flex justify-between items-center py-1">
+                      <span class="text-sm text-gray-500">Account Holder</span>
+                      <span class="text-sm font-semibold text-gray-900">{{ selectedLoan()!.customerAccountHolderName }}</span>
+                    </div>
+                  }
+                </div>
+              }
+
               <!-- Documents -->
               @if (selectedLoan()!.customerKtpPath || selectedLoan()!.customerKkPath || selectedLoan()!.customerNpwpPath) {
                 <div class="bg-white/50 rounded-xl p-4">

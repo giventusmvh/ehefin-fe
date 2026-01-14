@@ -25,6 +25,10 @@ export interface UserProfile {
   ktpUrl: string | null;
   kkUrl: string | null;
   npwpUrl: string | null;
+  // Bank account information
+  bankName?: string | null;
+  accountNumber?: string | null;
+  accountHolderName?: string | null;
 }
 
 export interface User {
