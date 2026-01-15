@@ -1,8 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AdminService } from '../../../core/services/admin.service';
-import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
+import { BranchFacade } from './branch.facade';
 import { UserBranch } from '../../../core/models';
 
 @Component({
@@ -12,18 +10,18 @@ import { UserBranch } from '../../../core/models';
   templateUrl: './branch-list.html',
 })
 export default class BranchListComponent implements OnInit {
-  private adminService = inject(AdminService);
-  private confirmDialog = inject(ConfirmDialogService);
+  private facade = inject(BranchFacade);
 
-  branches = signal<UserBranch[]>([]);
-  loading = signal(false);
+  // Expose facade signals
+  branches = this.facade.branches;
+  loading = this.facade.loading;
+  saving = this.facade.saving;
+  error = this.facade.error;
 
-  // Modal State
+  // UI-specific state
   showModal = signal(false);
   isEditing = signal(false);
   editingId = signal<number | null>(null);
-  saving = signal(false);
-  error = signal<string | null>(null);
 
   form = {
     code: '',
@@ -31,27 +29,14 @@ export default class BranchListComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.loadBranches();
-  }
-
-  private loadBranches() {
-    this.loading.set(true);
-    this.adminService.getBranches().subscribe({
-      next: (res) => {
-        this.branches.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
+    this.facade.loadBranches();
   }
 
   openCreateModal() {
     this.isEditing.set(false);
     this.editingId.set(null);
     this.form = { code: '', location: '' };
-    this.error.set(null);
+    this.facade.clearError();
     this.showModal.set(true);
   }
 
@@ -59,7 +44,7 @@ export default class BranchListComponent implements OnInit {
     this.isEditing.set(true);
     this.editingId.set(branch.id);
     this.form = { code: branch.code, location: branch.location };
-    this.error.set(null);
+    this.facade.clearError();
     this.showModal.set(true);
   }
 
@@ -67,69 +52,23 @@ export default class BranchListComponent implements OnInit {
     this.showModal.set(false);
   }
 
-  saveBranch() {
+  async saveBranch() {
     if (!this.form.code || !this.form.location) return;
 
-    this.saving.set(true);
-    this.error.set(null);
+    let result: UserBranch | null;
 
-    const request = this.isEditing()
-      ? this.adminService.updateBranch(this.editingId()!, this.form)
-      : this.adminService.createBranch(this.form);
+    if (this.isEditing()) {
+      result = await this.facade.updateBranch(this.editingId()!, this.form);
+    } else {
+      result = await this.facade.createBranch(this.form);
+    }
 
-    request.subscribe({
-      next: (res) => {
-        if (res.data) {
-          if (this.isEditing()) {
-            this.branches.update((list) =>
-              list.map((b) => (b.id === res.data!.id ? res.data! : b))
-            );
-          } else {
-            this.branches.update((list) => [...list, res.data!]);
-          }
-          this.closeModal();
-        }
-        this.saving.set(false);
-      },
-      error: (err) => {
-        this.saving.set(false);
-        let msg = err.error?.message || 'Failed to save branch';
-        // Handle Spring Boot standard validation errors
-        if (err.error?.errors && Array.isArray(err.error.errors)) {
-           const details = err.error.errors.map((e: any) => e.defaultMessage || e.message).join(', ');
-           if (details) msg += `: ${details}`;
-        }
-        this.error.set(msg);
-      },
-    });
+    if (result) {
+      this.closeModal();
+    }
   }
 
   async confirmDelete(branch: UserBranch) {
-    const confirmed = await this.confirmDialog.confirm({
-      title: 'Delete Branch',
-      message: `Are you sure you want to delete branch "${branch.location}"? This cannot be undone.`,
-      confirmText: 'Delete',
-      cancelText: 'Cancel',
-      type: 'danger',
-    });
-
-    if (confirmed) {
-      this.adminService.deleteBranch(branch.id).subscribe({
-        next: () => {
-          this.branches.update((list) => list.filter((b) => b.id !== branch.id));
-        },
-        error: (err) => {
-          // Show error alert (maybe reuse confirm dialog with simple info type?)
-          // For now, simpler to reuse confirmDialog as an alert
-          this.confirmDialog.confirm({
-            title: 'Delete Failed',
-            message: err.error?.message || 'Could not delete branch',
-            confirmText: 'OK',
-            type: 'warning',
-            // Hacky way to make it an alert: hide cancel or ignore result
-          });
-        },
-      });
-    }
+    await this.facade.deleteBranch(branch);
   }
 }

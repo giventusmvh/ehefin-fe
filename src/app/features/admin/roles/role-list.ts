@@ -1,7 +1,7 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { AdminService } from '../../../core/services/admin.service';
-import { Role, Permission } from '../../../core/models';
+import { RoleFacade } from './role.facade';
+import { Role } from '../../../core/models';
 
 @Component({
   selector: 'app-role-list',
@@ -10,51 +10,27 @@ import { Role, Permission } from '../../../core/models';
   templateUrl: './role-list.html',
 })
 export default class RoleListComponent implements OnInit {
-  private adminService = inject(AdminService);
+  private facade = inject(RoleFacade);
 
-  roles = signal<Role[]>([]);
-  allPermissions = signal<Permission[]>([]);
-  loading = signal(false);
+  // Expose facade signals
+  roles = this.facade.roles;
+  allPermissions = this.facade.permissions;
+  loading = this.facade.loading;
+  saving = this.facade.saving;
 
-  // Modal state
+  // UI-specific state
   showModal = signal(false);
   editingRole = signal<Role | null>(null);
   selectedPermissionIds = signal<Set<number>>(new Set());
-  saving = signal(false);
 
   ngOnInit() {
-    this.loadRoles();
-  }
-
-  private loadRoles() {
-    this.loading.set(true);
-
-    this.adminService.getRoles().subscribe({
-      next: (res) => {
-        this.roles.set(res.data ?? []);
-        this.loading.set(false);
-      },
-      error: () => {
-        this.loading.set(false);
-      },
-    });
-  }
-
-  private loadPermissions() {
-    // Load permissions only when needed (modal opened)
-    if (this.allPermissions().length === 0) {
-      this.adminService.getPermissions().subscribe({
-        next: (res) => {
-          this.allPermissions.set(res.data ?? []);
-        },
-      });
-    }
+    this.facade.loadRoles();
   }
 
   openEditModal(role: Role) {
     this.editingRole.set(role);
     this.selectedPermissionIds.set(new Set(role.permissions.map((p) => p.id)));
-    this.loadPermissions(); // Load permissions lazily
+    this.facade.loadPermissions();
     this.showModal.set(true);
   }
 
@@ -79,29 +55,15 @@ export default class RoleListComponent implements OnInit {
     this.selectedPermissionIds.set(newSet);
   }
 
-  savePermissions() {
+  async savePermissions() {
     const role = this.editingRole();
     if (!role) return;
 
-    this.saving.set(true);
     const permissionIds = Array.from(this.selectedPermissionIds());
-
-    this.adminService.updateRolePermissions(role.id, permissionIds).subscribe({
-      next: (res) => {
-        // Update the role in the list
-        if (res.data) {
-          const updatedRoles = this.roles().map((r) =>
-            r.id === role.id ? res.data! : r
-          );
-          this.roles.set(updatedRoles);
-        }
-        this.saving.set(false);
-        this.closeModal();
-      },
-      error: () => {
-        this.saving.set(false);
-        alert('Failed to update permissions');
-      },
-    });
+    const result = await this.facade.updateRolePermissions(role.id, permissionIds);
+    
+    if (result) {
+      this.closeModal();
+    }
   }
 }

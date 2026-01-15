@@ -1,8 +1,7 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, computed } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
-import { AdminService } from '../../../core/services/admin.service';
-import { Role, Branch } from '../../../core/models';
+import { UserFacade } from './user.facade';
 
 @Component({
   selector: 'app-user-form',
@@ -11,13 +10,15 @@ import { Role, Branch } from '../../../core/models';
   templateUrl: './user-form.html',
 })
 export default class UserFormComponent implements OnInit {
-  private adminService = inject(AdminService);
+  private facade = inject(UserFacade);
   private router = inject(Router);
 
-  roles = signal<Role[]>([]);
-  branches = signal<Branch[]>([]);
+  // Expose facade signals
+  roles = this.facade.roles;
+  branches = this.facade.branches;
+  error = this.facade.error;
+
   loading = signal(false);
-  error = signal<string | null>(null);
 
   form = {
     name: '',
@@ -28,16 +29,7 @@ export default class UserFormComponent implements OnInit {
   };
 
   ngOnInit() {
-    this.loadData();
-  }
-
-  private loadData() {
-    this.adminService.getRoles().subscribe({
-      next: (res) => this.roles.set(res.data ?? []),
-    });
-    this.adminService.getBranches().subscribe({
-      next: (res) => this.branches.set(res.data ?? []),
-    });
+    this.facade.loadSupportingData();
   }
 
   needsBranch(): boolean {
@@ -46,36 +38,32 @@ export default class UserFormComponent implements OnInit {
     return role?.name === 'MARKETING' || role?.name === 'BRANCH_MANAGER';
   }
 
-  onSubmit() {
+  async onSubmit() {
     if (!this.form.roleId) {
-      this.error.set('Role is required');
+      this.facade.error.set('Role is required');
       return;
     }
 
     if (this.needsBranch() && !this.form.branchId) {
-      this.error.set('Branch is required for this role');
+      this.facade.error.set('Branch is required for this role');
       return;
     }
 
     this.loading.set(true);
-    this.error.set(null);
+    this.facade.clearError();
 
-    this.adminService
-      .createUser({
-        name: this.form.name,
-        email: this.form.email,
-        password: this.form.password,
-        roleId: this.form.roleId,
-        branchId: this.form.branchId ?? undefined,
-      })
-      .subscribe({
-        next: () => {
-          this.router.navigate(['/admin/users']);
-        },
-        error: (err) => {
-          this.loading.set(false);
-          this.error.set(err.error?.message || 'Failed to create user');
-        },
-      });
+    const result = await this.facade.createUser({
+      name: this.form.name,
+      email: this.form.email,
+      password: this.form.password,
+      roleId: this.form.roleId,
+      branchId: this.form.branchId ?? undefined,
+    });
+
+    if (result) {
+      this.router.navigate(['/admin/users']);
+    } else {
+      this.loading.set(false);
+    }
   }
 }
