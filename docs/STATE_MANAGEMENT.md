@@ -243,7 +243,15 @@ export class UserFormComponent {
 | `loanHistory`     | `LoanHistory[]`           | History of selected loan |
 | `approvalHistory` | `ApprovalHistoryItem[]`   | User's approval history  |
 | `loading`         | `boolean`                 | Loading state            |
+| `historyLoading`  | `boolean`                 | Approval history loading |
 | `actionLoading`   | `boolean`                 | Approve/reject loading   |
+
+**Computed Signals:**
+
+| Signal     | Type     | Purpose                    |
+| ---------- | -------- | -------------------------- |
+| `userName` | `string` | Nama user dari AuthService |
+| `roleName` | `string` | Nama role yang diformat    |
 
 ---
 
@@ -261,3 +269,8 @@ export class UserFormComponent {
 
 - [Angular Signals Guide](https://angular.dev/guide/signals)
 - [FACADE_PATTERN.md](./FACADE_PATTERN.md)
+- [PENJELASAN_KODE_DETAIL.md](./PENJELASAN_KODE_DETAIL.md)
+
+---
+
+_Dokumentasi diupdate: 2026-01-19_

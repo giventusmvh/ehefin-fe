@@ -99,6 +99,28 @@ ehefin-fe/
 | `features/` | Halaman-halaman yang bisa dikunjungi   | Seperti ruangan-ruangan di rumah        |
 | `shared/`   | Komponen yang dipakai di banyak tempat | Seperti perabotan yang bisa dipindahkan |
 
+### Arsitektur dengan Facade Pattern:
+
+Setiap feature folder memiliki **Facade** yang mengelola state:
+
+```
+features/
+├── workplace/
+│   ├── workplace.ts           ← UI Component
+│   └── workplace.facade.ts    ← STATE & LOGIC
+├── admin/
+│   ├── users/
+│   │   ├── user-list.ts       ← UI Component
+│   │   ├── user-form.ts       ← UI Component
+│   │   └── user.facade.ts     ← STATE & LOGIC (di-share)
+│   ├── roles/
+│   │   ├── role-list.ts
+│   │   └── role.facade.ts
+│   └── branches/
+│       ├── branch-list.ts
+│       └── branch.facade.ts
+```
+
 ---
 
 ## 4. Halaman-Halaman Aplikasi
@@ -405,6 +427,7 @@ Backoffice bisa melihat pengajuan dari **semua cabang**.
 | ------------------------- | -------------------------------------------------- |
 | **Standalone Components** | Komponen mandiri tanpa perlu modul                 |
 | **Signals**               | Cara modern untuk mengelola data yang berubah      |
+| **Facade Pattern**        | Pola arsitektur untuk mengelola state per feature  |
 | **Lazy Loading**          | Halaman dimuat hanya saat dibutuhkan (lebih cepat) |
 | **Guards**                | Penjaga akses halaman                              |
 | **Interceptors**          | Penambah otomatis data ke setiap permintaan        |
@@ -442,10 +465,11 @@ Backoffice bisa melihat pengajuan dari **semua cabang**.
 | **Login**        | Pintu masuk staff internal                  |
 | **Workplace**    | Dashboard untuk proses persetujuan pinjaman |
 | **Admin**        | Dashboard untuk kelola user, role, cabang   |
+| **Facades**      | Pengelola state per feature                 |
 | **Guards**       | Penjaga akses halaman                       |
 | **Interceptors** | Penambah token otomatis                     |
 | **Services**     | Penghubung ke server backend                |
 
 ---
 
-_Dokumentasi dibuat: 2026-01-12_
+_Dokumentasi diupdate: 2026-01-19_

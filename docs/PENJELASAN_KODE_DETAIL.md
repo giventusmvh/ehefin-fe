@@ -11,7 +11,8 @@
 3. [Guards (Penjaga Akses)](#3-guards-penjaga-akses)
 4. [Interceptors (Pengolah Request)](#4-interceptors-pengolah-request)
 5. [Models (Template Data)](#5-models-template-data)
-6. [Features (Halaman-Halaman)](#6-features-halaman-halaman)
+6. [Facades (Pengelola State)](#6-facades-pengelola-state)
+7. [Features (Halaman-Halaman)](#7-features-halaman-halaman)
 
 ---
 
@@ -364,9 +365,187 @@ LoanApplication
 
 ---
 
-## 6. Features (Halaman-Halaman)
+## 6. Facades (Pengelola State)
 
-### 6.1 `landing.ts` - Halaman Utama
+> **INFO:** Facade Pattern adalah arsitektur yang digunakan di projek ini untuk mengelola state dan menyembunyikan kompleksitas interaksi dengan services. Setiap feature utama memiliki Facade sendiri.
+
+### 6.1 `workplace.facade.ts` - Facade Loan Approval
+
+**Lokasi:** `src/app/features/workplace/workplace.facade.ts`
+
+**Fungsi:** Mengelola state dan operasi untuk workflow approval pinjaman.
+
+**State Signals:**
+
+| Signal            | Tipe                    | Fungsi                             |
+| ----------------- | ----------------------- | ---------------------------------- |
+| `loans`           | `LoanApplication[]`     | Daftar pinjaman pending            |
+| `selectedLoan`    | `LoanApplication\|null` | Pinjaman yang sedang dipilih       |
+| `loanHistory`     | `LoanHistory[]`         | Riwayat status pinjaman            |
+| `approvalHistory` | `ApprovalHistoryItem[]` | Riwayat approval yang user lakukan |
+| `loading`         | `boolean`               | Loading saat load pending loans    |
+| `historyLoading`  | `boolean`               | Loading saat load history          |
+| `actionLoading`   | `boolean`               | Loading saat approve/reject        |
+
+**Computed Signals:**
+
+| Signal     | Fungsi                                         |
+| ---------- | ---------------------------------------------- |
+| `userName` | Mengambil nama user dari AuthService           |
+| `roleName` | Mengambil dan format nama role user yang aktif |
+
+**Methods:**
+
+| Method                  | Fungsi                               |
+| ----------------------- | ------------------------------------ |
+| `loadPendingLoans()`    | Memuat daftar pinjaman pending       |
+| `loadApprovalHistory()` | Memuat riwayat approval staff        |
+| `selectLoan(loan)`      | Memilih pinjaman dan load detail     |
+| `clearSelection()`      | Menghapus pilihan pinjaman           |
+| `approve(note?)`        | Menyetujui pinjaman (return Promise) |
+| `reject(note)`          | Menolak pinjaman (return Promise)    |
+
+---
+
+### 6.2 `user.facade.ts` - Facade User Management
+
+**Lokasi:** `src/app/features/admin/users/user.facade.ts`
+
+**Fungsi:** Mengelola state dan operasi CRUD untuk user management.
+
+**State Signals:**
+
+| Signal             | Tipe           | Fungsi                        |
+| ------------------ | -------------- | ----------------------------- |
+| `users`            | `User[]`       | Daftar semua user             |
+| `roles`            | `Role[]`       | Daftar roles (cached)         |
+| `branches`         | `UserBranch[]` | Daftar cabang (cached)        |
+| `loading`          | `boolean`      | Loading saat load users       |
+| `saving`           | `boolean`      | Loading saat create/update    |
+| `error`            | `string\|null` | Pesan error                   |
+| `togglingStatusId` | `number\|null` | ID user yang sedang di-toggle |
+
+**Computed Signals:**
+
+| Signal        | Fungsi                             |
+| ------------- | ---------------------------------- |
+| `hasUsers`    | Cek apakah ada user dalam list     |
+| `hasRoles`    | Cek apakah roles sudah ter-load    |
+| `hasBranches` | Cek apakah branches sudah ter-load |
+
+**Methods:**
+
+| Method                       | Fungsi                                    |
+| ---------------------------- | ----------------------------------------- |
+| `loadUsers()`                | Memuat daftar users                       |
+| `loadRoles()`                | Memuat daftar roles (dengan caching)      |
+| `loadBranches()`             | Memuat daftar branches (dengan caching)   |
+| `loadSupportingData()`       | Memuat roles & branches untuk form        |
+| `createUser(request)`        | Membuat user baru                         |
+| `updateUser(id, data)`       | Update data user                          |
+| `toggleUserStatus(user)`     | Aktifkan/nonaktifkan user (dengan dialog) |
+| `assignRole(userId, roleId)` | Menambah role ke user                     |
+| `removeRole(user, roleName)` | Menghapus role dari user (dengan dialog)  |
+| `clearError()`               | Menghapus pesan error                     |
+| `getUserById(id)`            | Mendapatkan user dari local state         |
+
+---
+
+### 6.3 `role.facade.ts` - Facade Role & Permission
+
+**Lokasi:** `src/app/features/admin/roles/role.facade.ts`
+
+**Fungsi:** Mengelola state dan operasi untuk role & permission management.
+
+**State Signals:**
+
+| Signal        | Tipe           | Fungsi                   |
+| ------------- | -------------- | ------------------------ |
+| `roles`       | `Role[]`       | Daftar roles             |
+| `permissions` | `Permission[]` | Daftar semua permissions |
+| `loading`     | `boolean`      | Loading saat load roles  |
+| `saving`      | `boolean`      | Loading saat update      |
+| `error`       | `string\|null` | Pesan error              |
+
+**Methods:**
+
+| Method                                         | Fungsi                      |
+| ---------------------------------------------- | --------------------------- |
+| `loadRoles()`                                  | Memuat daftar roles         |
+| `loadPermissions()`                            | Memuat permissions (cached) |
+| `updateRolePermissions(roleId, permissionIds)` | Update permissions role     |
+| `clearError()`                                 | Menghapus pesan error       |
+
+---
+
+### 6.4 `branch.facade.ts` - Facade Branch Management
+
+**Lokasi:** `src/app/features/admin/branches/branch.facade.ts`
+
+**Fungsi:** Mengelola state dan operasi CRUD untuk branch (cabang).
+
+**State Signals:**
+
+| Signal     | Tipe           | Fungsi            |
+| ---------- | -------------- | ----------------- |
+| `branches` | `UserBranch[]` | Daftar cabang     |
+| `loading`  | `boolean`      | Loading saat load |
+| `saving`   | `boolean`      | Loading saat save |
+| `error`    | `string\|null` | Pesan error       |
+
+**Methods:**
+
+| Method                   | Fungsi                                    |
+| ------------------------ | ----------------------------------------- |
+| `loadBranches()`         | Memuat daftar cabang                      |
+| `createBranch(data)`     | Membuat cabang baru                       |
+| `updateBranch(id, data)` | Update data cabang                        |
+| `deleteBranch(branch)`   | Hapus cabang (dengan confirmation dialog) |
+| `clearError()`           | Menghapus pesan error                     |
+
+---
+
+### 6.5 Cara Kerja Facade Pattern
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                   ARSITEKTUR FACADE                          │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────┐
+│     Component       │   ← Hanya inject Facade
+│   (workplace.ts)    │   ← Tidak tahu detail services
+└──────────┬──────────┘
+           │ inject
+           ▼
+┌─────────────────────┐
+│      FACADE         │   ← Mengelola State (signals)
+│ (WorkplaceFacade)   │   ← Menyediakan Methods
+│                     │   ← Menyembunyikan kompleksitas
+└──────────┬──────────┘
+           │ inject
+           ▼
+┌─────────────────────┐
+│     Services        │   ← HTTP calls ke API
+│ (ApprovalService)   │   ← Low-level operations
+└─────────────────────┘
+```
+
+**Keuntungan Menggunakan Facade:**
+
+| Aspek                | Tanpa Facade          | Dengan Facade        |
+| -------------------- | --------------------- | -------------------- |
+| Component Size       | 200+ baris            | ~80 baris            |
+| State Management     | Tersebar di component | Terpusat di Facade   |
+| Testability          | Sulit                 | Mudah                |
+| State Sharing        | Tidak bisa            | Bisa antar component |
+| Service Dependencies | Banyak inject         | Satu inject (Facade) |
+
+---
+
+## 7. Features (Halaman-Halaman)
+
+### 7.1 `landing.ts` - Halaman Utama
 
 **Lokasi:** `src/app/features/landing/landing.ts`
 
@@ -393,7 +572,7 @@ Tampilkan di halaman
 
 ---
 
-### 6.2 `login.ts` - Halaman Login
+### 7.2 `login.ts` - Halaman Login
 
 **Lokasi:** `src/app/features/auth/login/login.ts`
 
@@ -419,7 +598,7 @@ Validasi input (tidak boleh kosong)
     │       │
     ▼       ▼
 Tampil    Panggil authService.login()
-pesan           │
+ pesan           │
           ┌─────┴─────┐
           ▼           ▼
       Berhasil      Gagal
@@ -436,9 +615,11 @@ SUPERADMIN  Role lain
 
 ---
 
-### 6.3 `workplace.ts` - Dashboard Kerja
+### 7.3 `workplace.ts` - Dashboard Kerja
 
 **Lokasi:** `src/app/features/workplace/workplace.ts`
+
+**Menggunakan:** `WorkplaceFacade` (lihat [Section 6.1](#61-workplacefacadets---facade-loan-approval))
 
 **Fungsi:**
 
@@ -447,14 +628,36 @@ SUPERADMIN  Role lain
 - Memungkinkan approve/reject pinjaman
 - Menampilkan riwayat approval yang pernah dilakukan
 
-**State (Data yang Dikelola):**
+**Arsitektur dengan Facade:**
+
+```typescript
+// Component hanya perlu inject Facade
+export class WorkplaceComponent {
+  private facade = inject(WorkplaceFacade);
+
+  // Expose signals dari Facade
+  loans = this.facade.loans;
+  loading = this.facade.loading;
+  selectedLoan = this.facade.selectedLoan;
+
+  ngOnInit() {
+    this.facade.loadPendingLoans();
+  }
+
+  async onApprove(note: string) {
+    await this.facade.approve(note);
+  }
+}
+```
+
+**State yang dikelola Facade:**
 
 | Signal            | Isi                     | Tipe                     |
 | ----------------- | ----------------------- | ------------------------ |
 | `activeTab`       | Tab yang aktif          | 'pending' atau 'history' |
 | `loans`           | Daftar pinjaman pending | Array                    |
 | `selectedLoan`    | Pinjaman yang dipilih   | Object                   |
-| `history`         | Riwayat status pinjaman | Array                    |
+| `loanHistory`     | Riwayat status pinjaman | Array                    |
 | `loading`         | Status loading          | Boolean                  |
 | `approvalHistory` | Riwayat approval staff  | Array                    |
 
@@ -487,33 +690,36 @@ Refresh daftar pending
 
 ---
 
-### 6.4 Folder `admin/` - Dashboard Admin
+### 7.4 Folder `admin/` - Dashboard Admin
 
 **Lokasi:** `src/app/features/admin/`
 
-**Struktur:**
+**Struktur dengan Facades:**
 
 ```
 admin/
-├── admin-layout.ts    ← Kerangka halaman admin
-├── admin.routes.ts    ← Routing khusus admin
-├── users/             ← Manajemen user
-│   ├── user-list.ts   ← Daftar user
-│   └── user-form.ts   ← Form tambah/edit user
-├── roles/             ← Manajemen role
-│   └── role-list.ts   ← Daftar role & permission
-└── branches/          ← Manajemen cabang
-    └── branch-list.ts ← Daftar cabang
+├── admin-layout.ts        ← Kerangka halaman admin
+├── admin.routes.ts        ← Routing khusus admin
+├── users/                 ← Manajemen user
+│   ├── user-list.ts       ← Daftar user (inject UserFacade)
+│   ├── user-form.ts       ← Form tambah/edit user (inject UserFacade)
+│   └── user.facade.ts     ← STATE & LOGIC untuk user management
+├── roles/                 ← Manajemen role
+│   ├── role-list.ts       ← Daftar role (inject RoleFacade)
+│   └── role.facade.ts     ← STATE & LOGIC untuk role management
+└── branches/              ← Manajemen cabang
+    ├── branch-list.ts     ← Daftar cabang (inject BranchFacade)
+    └── branch.facade.ts   ← STATE & LOGIC untuk branch management
 ```
 
-**Fungsi Tiap Sub-Halaman:**
+**Facade per Sub-Halaman:**
 
-| Halaman       | Fungsi                                             |
-| ------------- | -------------------------------------------------- |
-| `user-list`   | Menampilkan daftar user, filter, aktif/nonaktifkan |
-| `user-form`   | Form untuk tambah atau edit user                   |
-| `role-list`   | Menampilkan role dan edit permission               |
-| `branch-list` | Menampilkan, tambah, edit, hapus cabang            |
+| Halaman       | Facade         | Fungsi                                        |
+| ------------- | -------------- | --------------------------------------------- |
+| `user-list`   | `UserFacade`   | CRUD user, toggle status, assign/remove role  |
+| `user-form`   | `UserFacade`   | Create user (state di-share dengan user-list) |
+| `role-list`   | `RoleFacade`   | Load roles, update permissions                |
+| `branch-list` | `BranchFacade` | CRUD branch dengan confirmation dialog        |
 
 ---
 
@@ -521,39 +727,63 @@ admin/
 
 ```
 ┌─────────────────────────────────────────────────────────────────────────┐
-│                     BAGAIMANA SEMUANYA TERHUBUNG                        │
+│                  ARSITEKTUR DENGAN FACADE PATTERN                        │
 └─────────────────────────────────────────────────────────────────────────┘
 
                         app.routes.ts
                     (Peta semua halaman)
                             │
-         ┌──────────────────┼──────────────────┐
-         │                  │                  │
-    ┌────▼────┐      ┌──────▼──────┐    ┌──────▼──────┐
-    │ Landing │      │   Login     │    │  Workplace  │
-    │ Page    │      │   Page      │    │  Dashboard  │
-    └────┬────┘      └──────┬──────┘    └──────┬──────┘
-         │                  │                  │
-         │                  │                  │
-         │           ┌──────▼──────┐    ┌──────▼──────┐
-         │           │ AuthService │    │ ApprovalSvc │
-         │           └──────┬──────┘    └──────┬──────┘
-         │                  │                  │
-         │                  └────────┬─────────┘
-         │                           │
-         │                    ┌──────▼──────┐
-         │                    │  JWT        │
-         │                    │ Interceptor │
-         │                    └──────┬──────┘
-         │                           │
-         └───────────────────────────┼───────────────
-                                     │
-                              ┌──────▼──────┐
-                              │   Backend   │
-                              │   Server    │
-                              └─────────────┘
+     ┌──────────────────────┼──────────────────────────┐
+     │                      │                          │
+┌────▼────┐          ┌──────▼──────┐            ┌──────▼──────┐
+│ Landing │          │   Login     │            │    Admin    │
+│  Page   │          │   Page      │            │  Dashboard  │
+└────┬────┘          └──────┬──────┘            └──────┬──────┘
+     │                      │                          │
+     │                      │               ┌──────────┼──────────┐
+     │                      │               │          │          │
+     │                      │          ┌────▼────┐┌────▼────┐┌────▼────┐
+     │                      │          │UserFacd ││RoleFacd ││BrchFacd │
+     │                      │          └────┬────┘└────┬────┘└────┬────┘
+     │                      │               └──────────┼──────────┘
+     │                      │                          │
+     │               ┌──────▼──────┐            ┌──────▼──────┐
+     │               │ AuthService │            │ AdminService│
+     │               └──────┬──────┘            └──────┬──────┘
+     │                      │                          │
+     │                      │           ┌──────────────┘
+     │                      │           │
+┌────▼────────┐      ┌──────▼──────┐    │
+│  Workplace  │      │  JWT        │    │
+│  Dashboard  │      │ Interceptor │    │
+└──────┬──────┘      └──────┬──────┘    │
+       │                    │           │
+┌──────▼──────┐             │           │
+│ Workplace   │             │           │
+│  Facade     │             │           │
+└──────┬──────┘             │           │
+       │                    │           │
+┌──────▼──────┐             │           │
+│ ApprovalSvc │             │           │
+└──────┬──────┘             │           │
+       │                    │           │
+       └────────────────────┼───────────┘
+                            │
+                     ┌──────▼──────┐
+                     │   Backend   │
+                     │   Server    │
+                     └─────────────┘
 ```
+
+### Daftar Semua Facades
+
+| Facade            | Lokasi                                     | Fungsi                       |
+| ----------------- | ------------------------------------------ | ---------------------------- |
+| `WorkplaceFacade` | `features/workplace/workplace.facade.ts`   | Loan approval workflow       |
+| `UserFacade`      | `features/admin/users/user.facade.ts`      | User CRUD, role assignment   |
+| `RoleFacade`      | `features/admin/roles/role.facade.ts`      | Role & permission management |
+| `BranchFacade`    | `features/admin/branches/branch.facade.ts` | Branch CRUD                  |
 
 ---
 
-_Dokumentasi dibuat: 2026-01-12_
+_Dokumentasi diupdate: 2026-01-19_

@@ -103,12 +103,12 @@ export class UserListComponent {
 
 ### Daftar Facade
 
-| Facade            | Lokasi                     | Fungsi                       |
-| ----------------- | -------------------------- | ---------------------------- |
-| `UserFacade`      | `features/admin/users/`    | User CRUD, role assignment   |
-| `RoleFacade`      | `features/admin/roles/`    | Role & permission management |
-| `BranchFacade`    | `features/admin/branches/` | Branch CRUD                  |
-| `WorkplaceFacade` | `features/workplace/`      | Loan approval workflow       |
+| Facade            | Lokasi                                     | Fungsi                       |
+| ----------------- | ------------------------------------------ | ---------------------------- |
+| `WorkplaceFacade` | `features/workplace/workplace.facade.ts`   | Loan approval workflow       |
+| `UserFacade`      | `features/admin/users/user.facade.ts`      | User CRUD, role assignment   |
+| `RoleFacade`      | `features/admin/roles/role.facade.ts`      | Role & permission management |
+| `BranchFacade`    | `features/admin/branches/branch.facade.ts` | Branch CRUD                  |
 
 ### Struktur Facade
 
@@ -196,3 +196,9 @@ export class UserFormComponent {
 
 - [Angular Signals](https://angular.dev/guide/signals)
 - [Facade Pattern - Refactoring Guru](https://refactoring.guru/design-patterns/facade)
+- [STATE_MANAGEMENT.md](./STATE_MANAGEMENT.md)
+- [PENJELASAN_KODE_DETAIL.md](./PENJELASAN_KODE_DETAIL.md)
+
+---
+
+_Dokumentasi diupdate: 2026-01-19_
