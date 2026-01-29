@@ -1,0 +1,236 @@
+<div class="max-w-5xl mx-auto pb-12">
+  <!-- Header / Navigation -->
+  <div class="mb-6 flex items-center gap-4">
+    <a routerLink="/admin/loans" class="p-2 -ml-2 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors">
+      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+    </a>
+    <h1 class="text-xl font-bold text-gray-900">Loan Details</h1>
+  </div>
+
+  @if (loading()) {
+    <div class="bg-white rounded-xl border border-gray-100 p-12 text-center">
+      <div class="inline-block animate-spin rounded-full h-8 w-8 border-4 border-brand-100 border-t-brand-600 mb-4"></div>
+      <p class="text-gray-500 font-medium">Loading loan details...</p>
+    </div>
+  } @else if (loan(); as l) {
+    <!-- Main Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Left Column: Customer & Loan Info -->
+      <div class="lg:col-span-2 space-y-6">
+        
+        <!-- Status Card -->
+        <div class="bg-white rounded-xl border border-gray-100 p-6 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <p class="text-sm text-gray-500 font-medium mb-1">Application ID</p>
+              <p class="text-lg font-mono font-semibold text-gray-900">#{{ l.id }}</p>
+            </div>
+            <div class="px-4 py-2 rounded-lg font-semibold text-sm tracking-wide uppercase" [ngClass]="getStatusColor(l.status)">
+              {{ formatStatus(l.status) | titlecase }}
+            </div>
+          </div>
+          <div class="flex items-center gap-2 text-sm text-gray-500 border-t border-gray-50 pt-4 mt-4">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+             Applied on {{ l.createdAt | date:'medium' }}
+          </div>
+        </div>
+
+        <!-- Customer Profile -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+           <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+             <h3 class="text-lg font-semibold text-gray-900">Customer Information</h3>
+           </div>
+           <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Full Name</label>
+               <p class="text-gray-900 font-medium">{{ l.customerName }}</p>
+             </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Email</label>
+               <p class="text-gray-900">{{ l.customerEmail || '-' }}</p>
+             </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Phone</label>
+               <p class="text-gray-900 font-mono">{{ l.customerPhone || '-' }}</p>
+             </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">NIK</label>
+               <p class="text-gray-900 font-mono">{{ l.customerNik || '-' }}</p>
+             </div>
+             <div class="md:col-span-2">
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Address</label>
+               <p class="text-gray-900">{{ l.customerAddress || '-' }}</p>
+             </div>
+           </div>
+        </div>
+
+        <!-- Documents -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-900">Documents</h3>
+          </div>
+          <div class="p-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+               <!-- KTP -->
+               @if (loan()?.customerKtpPath) {
+                   <div class="space-y-2">
+                       <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center">KTP</p>
+                       <div class="block relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-50">
+                           @if (getImageUrl(loan()?.customerKtpPath!) | secureImage | async; as src) {
+                              <img [src]="sanitize(src)" alt="KTP" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" (click)="openImage(src)">
+                              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                  <span class="text-white text-xs font-bold px-3 py-1 bg-black/50 rounded-full backdrop-blur-sm">View Full</span>
+                              </div>
+                           } @else {
+                              <div class="w-full h-full flex items-center justify-center">
+                                  <div class="animate-spin w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"></div>
+                              </div>
+                           }
+                       </div>
+                   </div>
+               }
+
+               <!-- NPWP -->
+               @if (loan()?.customerNpwpPath) {
+                   <div class="space-y-2">
+                       <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center">NPWP</p>
+                       <div class="block relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-50">
+                           @if (getImageUrl(loan()?.customerNpwpPath!) | secureImage | async; as src) {
+                              <img [src]="sanitize(src)" alt="NPWP" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" (click)="openImage(src)">
+                              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                  <span class="text-white text-xs font-bold px-3 py-1 bg-black/50 rounded-full backdrop-blur-sm">View Full</span>
+                              </div>
+                           } @else {
+                              <div class="w-full h-full flex items-center justify-center">
+                                  <div class="animate-spin w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"></div>
+                              </div>
+                           }
+                       </div>
+                   </div>
+               }
+
+               <!-- KK -->
+               @if (loan()?.customerKkPath) {
+                   <div class="space-y-2">
+                       <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center">Family Card (KK)</p>
+                       <div class="block relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-50">
+                           @if (getImageUrl(loan()?.customerKkPath!) | secureImage | async; as src) {
+                              <img [src]="sanitize(src)" alt="KK" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" (click)="openImage(src)">
+                              <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                  <span class="text-white text-xs font-bold px-3 py-1 bg-black/50 rounded-full backdrop-blur-sm">View Full</span>
+                              </div>
+                           } @else {
+                              <div class="w-full h-full flex items-center justify-center">
+                                  <div class="animate-spin w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"></div>
+                              </div>
+                           }
+                       </div>
+                   </div>
+               }
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Right Column: Product & Bank -->
+      <div class="space-y-6">
+        
+        <!-- Product Details -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+            <h3 class="text-lg font-semibold text-gray-900">Product Info</h3>
+          </div>
+          <div class="p-6 space-y-4">
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Product Name</label>
+               <p class="text-gray-900 font-medium">{{ l.productName || l.product?.name || '-' }}</p>
+             </div>
+             
+             <div class="border-t border-gray-100 pt-4 mt-4">
+               <div class="flex justify-between items-center mb-2">
+                 <span class="text-sm text-gray-500">Requested Amount</span>
+                 <span class="text-sm font-semibold text-gray-900">{{ l.requestedAmount | currency:'IDR':'symbol':'1.0-0' }}</span>
+               </div>
+               <div class="flex justify-between items-center mb-2">
+                 <span class="text-sm text-gray-500">Tenor</span>
+                 <span class="text-sm font-semibold text-gray-900">{{ l.requestedTenor }} Months</span>
+               </div>
+               <div class="flex justify-between items-center">
+                 <span class="text-sm text-gray-500">Rate</span>
+                 <span class="text-sm font-semibold text-gray-900">{{ l.requestedRate }}% p.a.</span>
+               </div>
+             </div>
+          </div>
+        </div>
+
+        <!-- Bank Details -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+           <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+             <h3 class="text-lg font-semibold text-gray-900">Disbursement Info</h3>
+           </div>
+           <div class="p-6 space-y-4">
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Bank Name</label>
+               <p class="text-gray-900 font-medium">{{ l.customerBankName || '-' }}</p>
+             </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Account Number</label>
+               <p class="text-gray-900 font-mono">{{ l.customerAccountNumber || '-' }}</p>
+             </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Account Holder</label>
+               <p class="text-gray-900">{{ l.customerAccountHolderName || '-' }}</p>
+             </div>
+           </div>
+        </div>
+
+        <!-- Approval History -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+             <h3 class="text-lg font-semibold text-gray-900">History</h3>
+          </div>
+          <div class="p-6">
+             <div class="relative pl-4 border-l-2 border-gray-100 space-y-8">
+               @for (item of history(); track item.id) {
+                 <div class="relative">
+                   <div class="absolute -left-[21px] top-1 h-3 w-3 rounded-full border-2 border-white"
+                        [class]="getStatusColor(item.status).replace('text-', 'bg-').replace('bg-', 'ring-')"></div>
+                   <p class="text-sm font-semibold text-gray-900 mb-1">
+                     {{ formatStatus(item.status) | titlecase }}
+                   </p>
+                   <p class="text-xs text-gray-500 mb-2">
+                     {{ item.createdAt | date:'medium' }}
+                     <span class="text-gray-400 mx-1">•</span>
+                     <span>{{ item.approvedBy }} ({{ item.approvedByRole }})</span>
+                   </p>
+                   @if (item.note) {
+                     <p class="text-sm text-gray-600 bg-gray-50 p-2 rounded">{{ item.note }}</p>
+                   }
+                 </div>
+               } @empty {
+                 <p class="text-sm text-gray-400">No history available.</p>
+               }
+             </div>
+          </div>
+        </div>
+
+        <!-- Branch Info -->
+        <div class="bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+          <div class="px-6 py-4 border-b border-gray-100 bg-gray-50/50">
+             <h3 class="text-lg font-semibold text-gray-900">Branch</h3>
+          </div>
+          <div class="p-6">
+             <p class="text-gray-900 font-medium">{{ l.branchName || l.branch?.location || 'Head Office/Unassigned' }}</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  } @else {
+    <div class="bg-white rounded-xl border border-gray-100 p-12 text-center text-gray-400">
+      Loan not found.
+    </div>
+  }
+</div>

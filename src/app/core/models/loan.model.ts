@@ -55,6 +55,20 @@ export interface Product {
   interestRate: number;
 }
 
+export interface CreateProductRequest {
+    name: string;
+    amount: number;
+    tenor: number;
+    interestRate: number;
+}
+
+export interface UpdateProductRequest {
+    name?: string;
+    amount?: number;
+    tenor?: number;
+    interestRate?: number;
+}
+
 export interface Branch {
   id: number;
   code: string;

@@ -80,4 +80,35 @@ export class AdminService {
   deleteBranch(id: number): Observable<ApiResponse<null>> {
     return this.http.delete<ApiResponse<null>>(`${environment.apiUrl}/admin/branches/${id}`);
   }
+
+  // Loans
+  getLoans(): Observable<ApiResponse<import('../models').LoanApplication[]>> {
+    return this.http.get<ApiResponse<import('../models').LoanApplication[]>>(`${environment.apiUrl}/loans/all`);
+  }
+
+  getLoan(id: number): Observable<ApiResponse<import('../models').LoanApplication>> {
+    return this.http.get<ApiResponse<import('../models').LoanApplication>>(`${environment.apiUrl}/loans/${id}`);
+  }
+
+  getLoanHistory(id: number): Observable<ApiResponse<import('../models').LoanHistory[]>> {
+    return this.http.get<ApiResponse<import('../models').LoanHistory[]>>(`${environment.apiUrl}/loans/${id}/history`);
+  }
+
+  // Note: Backend controller provided does not show update status endpoint, commenting out for now
+  /*
+  updateLoanStatus(
+    id: number, 
+    status: import('../models').LoanStatus, 
+    note?: string
+  ): Observable<ApiResponse<import('../models').LoanApplication>> {
+    return this.http.patch<ApiResponse<import('../models').LoanApplication>>(
+      `${environment.apiUrl}/loans/${id}/status`, 
+      { status, note }
+    );
+  }
+  */
+
+  downloadFile(url: string): Observable<Blob> {
+    return this.http.get(url, { responseType: 'blob' });
+  }
 }
