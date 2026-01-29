@@ -1,20 +1,22 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DatePipe, CurrencyPipe, TitleCasePipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { LoanFacade } from '../loan.facade';
 import { LoanStatus } from '../../../../core/models';
 
 @Component({
   selector: 'app-loan-list',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [RouterLink, DatePipe, CurrencyPipe, TitleCasePipe],
+  imports: [RouterLink, DatePipe, CurrencyPipe, TitleCasePipe, FormsModule],
   templateUrl: './loan-list.html',
 })
 export default class LoanListComponent implements OnInit {
   private facade = inject(LoanFacade);
 
-  loans = this.facade.loans;
+  loans = this.facade.filteredLoans;
   loading = this.facade.loading;
+  searchQuery = this.facade.searchQuery;
 
   ngOnInit() {
     this.facade.loadLoans();

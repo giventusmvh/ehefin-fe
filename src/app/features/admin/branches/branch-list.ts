@@ -13,10 +13,11 @@ export default class BranchListComponent implements OnInit {
   private facade = inject(BranchFacade);
 
   // Expose facade signals
-  branches = this.facade.branches;
+  branches = this.facade.filteredBranches;
   loading = this.facade.loading;
   saving = this.facade.saving;
   error = this.facade.error;
+  searchQuery = this.facade.searchQuery;
 
   // UI-specific state
   showModal = signal(false);

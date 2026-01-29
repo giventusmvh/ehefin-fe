@@ -14,8 +14,24 @@ export class ProductFacade {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
 
+  // Search state
+  readonly searchQuery = signal<string>('');
+
   // ============ Computed Signals ============
   readonly hasProducts = computed(() => this.products().length > 0);
+
+  // Filtered products based on search query
+  readonly filteredProducts = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.products();
+    
+    return this.products().filter(product => 
+      product.name.toLowerCase().includes(query) ||
+      product.amount.toString().includes(query) ||
+      product.tenor.toString().includes(query) ||
+      product.interestRate.toString().includes(query)
+    );
+  });
 
   // ============ Data Loading ============
 

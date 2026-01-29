@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, OnInit, signal } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ProductFacade } from '../product.facade';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../../../../core/models';
 import ProductFormComponent from '../product-form/product-form';
@@ -8,15 +9,16 @@ import ProductFormComponent from '../product-form/product-form';
   selector: 'app-product-list',
   standalone: true,
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CurrencyPipe, ProductFormComponent],
+  imports: [CurrencyPipe, FormsModule, ProductFormComponent],
   templateUrl: './product-list.html',
 })
 export default class ProductListComponent implements OnInit {
   private facade = inject(ProductFacade);
 
   // Facade signals
-  products = this.facade.products;
+  products = this.facade.filteredProducts;
   loading = this.facade.loading;
+  searchQuery = this.facade.searchQuery;
 
   // Local state
   showModal = signal(false);

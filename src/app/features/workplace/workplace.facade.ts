@@ -3,7 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { catchError, of } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { ApprovalService } from '../../core/services/approval.service';
-import { LoanApplication, LoanHistory, ApprovalHistoryItem } from '../../core/models';
+import { LoanApplication, LoanHistory, ApprovalHistoryItem, LoanStatus } from '../../core/models';
 
 /**
  * WorkplaceFacade - Facade Pattern Implementation
@@ -27,6 +27,10 @@ export class WorkplaceFacade {
   readonly historyLoading = signal(false);
   readonly actionLoading = signal(false);
 
+  // Search state
+  readonly pendingSearchQuery = signal<string>('');
+  readonly historySearchQuery = signal<string>('');
+
   // ============ Computed Signals ============
   readonly userName = computed(() => this.authService.user()?.name ?? '');
   readonly roleName = computed(() => {
@@ -36,6 +40,35 @@ export class WorkplaceFacade {
     if (roles.includes('BRANCH_MANAGER')) return 'Branch Manager';
     if (roles.includes('MARKETING')) return 'Marketing';
     return roles[0] ?? '';
+  });
+
+  // Filtered pending loans based on search query
+  readonly filteredLoans = computed(() => {
+    const query = this.pendingSearchQuery().toLowerCase().trim();
+    if (!query) return this.loans();
+    
+    return this.loans().filter(loan => 
+      loan.customerName.toLowerCase().includes(query) ||
+      (loan.customerEmail?.toLowerCase().includes(query) ?? false) ||
+      loan.id.toString().includes(query) ||
+      (loan.branchName?.toLowerCase().includes(query) ?? false) ||
+      (loan.productName?.toLowerCase().includes(query) ?? false) ||
+      loan.requestedAmount.toString().includes(query)
+    );
+  });
+
+  // Filtered approval history based on search query
+  readonly filteredApprovalHistory = computed(() => {
+    const query = this.historySearchQuery().toLowerCase().trim();
+    if (!query) return this.approvalHistory();
+    
+    return this.approvalHistory().filter(item => 
+      item.customerName.toLowerCase().includes(query) ||
+      item.productName.toLowerCase().includes(query) ||
+      item.branchLocation.toLowerCase().includes(query) ||
+      item.actionTaken.toLowerCase().includes(query) ||
+      item.loanAmount.toString().includes(query)
+    );
   });
 
   // ============ Data Loading ============

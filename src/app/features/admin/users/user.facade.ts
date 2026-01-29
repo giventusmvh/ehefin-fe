@@ -25,10 +25,26 @@ export class UserFacade {
   readonly error = signal<string | null>(null);
   readonly togglingStatusId = signal<number | null>(null);
 
+  // Search state
+  readonly searchQuery = signal<string>('');
+
   // ============ Computed Signals ============
   readonly hasUsers = computed(() => this.users().length > 0);
   readonly hasRoles = computed(() => this.roles().length > 0);
   readonly hasBranches = computed(() => this.branches().length > 0);
+
+  // Filtered users based on search query
+  readonly filteredUsers = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.users();
+    
+    return this.users().filter(user => 
+      user.name.toLowerCase().includes(query) ||
+      user.email.toLowerCase().includes(query) ||
+      user.roles.some(role => role.toLowerCase().includes(query)) ||
+      (user.branch?.location?.toLowerCase().includes(query) ?? false)
+    );
+  });
 
   // ============ Data Loading ============
 

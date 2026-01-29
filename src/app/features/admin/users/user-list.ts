@@ -15,11 +15,12 @@ export default class UserListComponent implements OnInit {
   private facade = inject(UserFacade);
 
   // Expose facade signals to template
-  users = this.facade.users;
+  users = this.facade.filteredUsers;
   allRoles = this.facade.roles;
   branches = this.facade.branches;
   loading = this.facade.loading;
   togglingStatus = this.facade.togglingStatusId;
+  searchQuery = this.facade.searchQuery;
 
   // UI-specific state (kept in component)
   showModal = signal(false);

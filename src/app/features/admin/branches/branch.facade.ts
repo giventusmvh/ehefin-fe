@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { UserBranch } from '../../../core/models';
@@ -18,6 +18,20 @@ export class BranchFacade {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+
+  // Search state
+  readonly searchQuery = signal<string>('');
+
+  // ============ Computed Signals ============
+  readonly filteredBranches = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.branches();
+    
+    return this.branches().filter(branch => 
+      branch.code.toLowerCase().includes(query) ||
+      branch.location.toLowerCase().includes(query)
+    );
+  });
 
   // ============ Data Loading ============
 

@@ -1,4 +1,4 @@
-import { Injectable, inject, signal } from '@angular/core';
+import { Injectable, inject, signal, computed } from '@angular/core';
 import { AdminService } from '../../../core/services/admin.service';
 import { LoanApplication, LoanStatus } from '../../../core/models';
 
@@ -18,6 +18,24 @@ export class LoanFacade {
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
+
+  // Search state
+  readonly searchQuery = signal<string>('');
+
+  // ============ Computed Signals ============
+  readonly filteredLoans = computed(() => {
+    const query = this.searchQuery().toLowerCase().trim();
+    if (!query) return this.loans();
+    
+    return this.loans().filter(loan => 
+      loan.customerName.toLowerCase().includes(query) ||
+      (loan.customerEmail?.toLowerCase().includes(query) ?? false) ||
+      loan.id.toString().includes(query) ||
+      loan.status.toLowerCase().includes(query) ||
+      (loan.branchName?.toLowerCase().includes(query) ?? false) ||
+      (loan.productName?.toLowerCase().includes(query) ?? false)
+    );
+  });
 
   // ============ Data Loading ============
 

@@ -26,15 +26,17 @@ export default class WorkplaceComponent implements OnInit {
   activeTab = signal<'pending' | 'history'>('pending');
 
   // Expose facade signals
-  loans = this.facade.loans;
+  loans = this.facade.filteredLoans;
   selectedLoan = this.facade.selectedLoan;
   history = this.facade.loanHistory;
   loading = this.facade.loading;
   actionLoading = this.facade.actionLoading;
-  approvalHistory = this.facade.approvalHistory;
+  approvalHistory = this.facade.filteredApprovalHistory;
   historyLoading = this.facade.historyLoading;
   userName = this.facade.userName;
   roleName = this.facade.roleName;
+  pendingSearchQuery = this.facade.pendingSearchQuery;
+  historySearchQuery = this.facade.historySearchQuery;
 
   // UI-specific state
   note = '';
