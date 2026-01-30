@@ -1,19 +1,32 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { 
+  Subject, 
+  forkJoin, 
+  of, 
+  timer,
+  catchError, 
+  debounceTime, 
+  distinctUntilChanged,
+  retry
+} from 'rxjs';
 import { AdminService } from '../../../core/services/admin.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { User, Role, UserBranch, CreateUserRequest } from '../../../core/models';
 
 /**
- * UserFacade - Facade Pattern Implementation
+ * UserFacade - Facade Pattern Implementation with RxJS
  * 
- * Menyediakan interface sederhana untuk operasi user management.
- * Mengelola state (users, roles, branches) dan menyembunyikan kompleksitas
- * interaksi dengan multiple services.
+ * Features:
+ * - debounceTime: Search tidak spam filter
+ * - forkJoin: Load users, roles, branches secara paralel
+ * - retry: Auto-retry dengan exponential backoff
  */
 @Injectable({ providedIn: 'root' })
 export class UserFacade {
   private adminService = inject(AdminService);
   private confirmDialog = inject(ConfirmDialogService);
+  private destroyRef = inject(DestroyRef);
 
   // ============ State Signals ============
   readonly users = signal<User[]>([]);
@@ -27,6 +40,25 @@ export class UserFacade {
 
   // Search state
   readonly searchQuery = signal<string>('');
+
+  // ============ RxJS Subjects ============
+  
+  /** Subject for debounced search */
+  private searchSubject = new Subject<string>();
+
+  constructor() {
+    this.setupSearchDebounce();
+  }
+
+  private setupSearchDebounce(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(query => {
+      this.searchQuery.set(query);
+    });
+  }
 
   // ============ Computed Signals ============
   readonly hasUsers = computed(() => this.users().length > 0);
@@ -46,16 +78,31 @@ export class UserFacade {
     );
   });
 
+  // ============ Public Search Method ============
+
+  /**
+   * Update search query with debounce (300ms)
+   */
+  updateSearch(query: string): void {
+    this.searchSubject.next(query);
+  }
+
   // ============ Data Loading ============
 
   /**
-   * Load all users from API
+   * Load all users from API with retry
    */
   loadUsers(): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.adminService.getUsers().subscribe({
+    this.adminService.getUsers().pipe(
+      retry({
+        count: 3,
+        delay: (error, retryCount) => timer(retryCount * 1000)
+      }),
+      catchError(() => of({ data: [] }))
+    ).subscribe({
       next: (res) => {
         this.users.set(res.data ?? []);
         this.loading.set(false);
@@ -73,7 +120,9 @@ export class UserFacade {
   loadRoles(): void {
     if (this.roles().length > 0) return;
 
-    this.adminService.getRoles().subscribe({
+    this.adminService.getRoles().pipe(
+      retry({ count: 2, delay: 1000 })
+    ).subscribe({
       next: (res) => {
         this.roles.set(res.data ?? []);
       },
@@ -86,7 +135,9 @@ export class UserFacade {
   loadBranches(): void {
     if (this.branches().length > 0) return;
 
-    this.adminService.getBranches().subscribe({
+    this.adminService.getBranches().pipe(
+      retry({ count: 2, delay: 1000 })
+    ).subscribe({
       next: (res) => {
         this.branches.set(res.data ?? []);
       },
@@ -94,17 +145,80 @@ export class UserFacade {
   }
 
   /**
-   * Load supporting data (roles & branches) for edit modal
+   * Load supporting data (roles & branches) in parallel using forkJoin
    */
   loadSupportingData(): void {
-    this.loadRoles();
-    this.loadBranches();
+    // Skip if both already loaded
+    if (this.roles().length > 0 && this.branches().length > 0) return;
+
+    forkJoin({
+      roles: this.roles().length > 0 
+        ? of({ data: this.roles() }) 
+        : this.adminService.getRoles().pipe(
+            retry({ count: 2, delay: 1000 }),
+            catchError(() => of({ data: [] }))
+          ),
+      branches: this.branches().length > 0 
+        ? of({ data: this.branches() }) 
+        : this.adminService.getBranches().pipe(
+            retry({ count: 2, delay: 1000 }),
+            catchError(() => of({ data: [] }))
+          )
+    }).subscribe(({ roles, branches }) => {
+      if (this.roles().length === 0) {
+        this.roles.set(roles.data ?? []);
+      }
+      if (this.branches().length === 0) {
+        this.branches.set(branches.data ?? []);
+      }
+    });
+  }
+
+  /**
+   * Load all data (users, roles, branches) in parallel using forkJoin
+   */
+  loadAllData(): void {
+    this.loading.set(true);
+    this.error.set(null);
+
+    forkJoin({
+      users: this.adminService.getUsers().pipe(
+        retry({ count: 3, delay: (_, retryCount) => timer(retryCount * 1000) }),
+        catchError(() => of({ data: [] }))
+      ),
+      roles: this.roles().length > 0 
+        ? of({ data: this.roles() }) 
+        : this.adminService.getRoles().pipe(
+            retry({ count: 2, delay: 1000 }),
+            catchError(() => of({ data: [] }))
+          ),
+      branches: this.branches().length > 0 
+        ? of({ data: this.branches() }) 
+        : this.adminService.getBranches().pipe(
+            retry({ count: 2, delay: 1000 }),
+            catchError(() => of({ data: [] }))
+          )
+    }).subscribe({
+      next: ({ users, roles, branches }) => {
+        this.users.set(users.data ?? []);
+        if (this.roles().length === 0) {
+          this.roles.set(roles.data ?? []);
+        }
+        if (this.branches().length === 0) {
+          this.branches.set(branches.data ?? []);
+        }
+        this.loading.set(false);
+      },
+      error: () => {
+        this.loading.set(false);
+      }
+    });
   }
 
   // ============ User CRUD Operations ============
 
   /**
-   * Update user details
+   * Update user details with retry
    */
   updateUser(
     userId: number,
@@ -114,7 +228,9 @@ export class UserFacade {
       this.saving.set(true);
       this.error.set(null);
 
-      this.adminService.updateUser(userId, data).subscribe({
+      this.adminService.updateUser(userId, data).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.updateUserInList(res.data);
@@ -132,14 +248,16 @@ export class UserFacade {
   }
 
   /**
-   * Create new user
+   * Create new user with retry
    */
   createUser(request: CreateUserRequest): Promise<User | null> {
     return new Promise((resolve) => {
       this.saving.set(true);
       this.error.set(null);
 
-      this.adminService.createUser(request).subscribe({
+      this.adminService.createUser(request).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.users.update((list) => [...list, res.data!]);
@@ -178,7 +296,9 @@ export class UserFacade {
     return new Promise((resolve) => {
       this.togglingStatusId.set(user.id);
 
-      this.adminService.updateUserStatus(user.id, newStatus).subscribe({
+      this.adminService.updateUserStatus(user.id, newStatus).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.updateUserInList(res.data);
@@ -205,13 +325,15 @@ export class UserFacade {
   }
 
   /**
-   * Assign role to user
+   * Assign role to user with retry
    */
   assignRole(userId: number, roleId: number): Promise<User | null> {
     return new Promise((resolve) => {
       this.error.set(null);
 
-      this.adminService.assignRole(userId, roleId).subscribe({
+      this.adminService.assignRole(userId, roleId).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.updateUserInList(res.data);
@@ -247,7 +369,9 @@ export class UserFacade {
     if (!confirmed) return null;
 
     return new Promise((resolve) => {
-      this.adminService.removeRole(user.id, role.id).subscribe({
+      this.adminService.removeRole(user.id, role.id).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.updateUserInList(res.data);

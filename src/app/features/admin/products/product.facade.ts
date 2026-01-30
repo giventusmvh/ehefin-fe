@@ -1,12 +1,30 @@
-import { Injectable, inject, signal, computed } from '@angular/core';
+import { Injectable, inject, signal, computed, DestroyRef } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { 
+  Subject, 
+  of, 
+  timer,
+  catchError, 
+  debounceTime, 
+  distinctUntilChanged,
+  retry
+} from 'rxjs';
 import { ProductService } from '../../../core/services/product.service';
 import { ConfirmDialogService } from '../../../core/services/confirm-dialog.service';
 import { Product, CreateProductRequest, UpdateProductRequest } from '../../../core/models';
 
+/**
+ * ProductFacade - Facade Pattern Implementation with RxJS
+ *
+ * Features:
+ * - debounceTime: Search tidak spam filter
+ * - retry: Auto-retry dengan exponential backoff
+ */
 @Injectable({ providedIn: 'root' })
 export class ProductFacade {
   private productService = inject(ProductService);
   private confirmDialog = inject(ConfirmDialogService);
+  private destroyRef = inject(DestroyRef);
 
   // ============ State Signals ============
   readonly products = signal<Product[]>([]);
@@ -16,6 +34,25 @@ export class ProductFacade {
 
   // Search state
   readonly searchQuery = signal<string>('');
+
+  // ============ RxJS Subjects ============
+  
+  /** Subject for debounced search */
+  private searchSubject = new Subject<string>();
+
+  constructor() {
+    this.setupSearchDebounce();
+  }
+
+  private setupSearchDebounce(): void {
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged(),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe(query => {
+      this.searchQuery.set(query);
+    });
+  }
 
   // ============ Computed Signals ============
   readonly hasProducts = computed(() => this.products().length > 0);
@@ -33,13 +70,28 @@ export class ProductFacade {
     );
   });
 
+  // ============ Public Methods ============
+
+  /**
+   * Update search query with debounce (300ms)
+   */
+  updateSearch(query: string): void {
+    this.searchSubject.next(query);
+  }
+
   // ============ Data Loading ============
 
   loadProducts(): void {
     this.loading.set(true);
     this.error.set(null);
 
-    this.productService.getProducts().subscribe({
+    this.productService.getProducts().pipe(
+      retry({
+        count: 3,
+        delay: (error, retryCount) => timer(retryCount * 1000)
+      }),
+      catchError(() => of({ data: [] }))
+    ).subscribe({
       next: (res) => {
         this.products.set(res.data ?? []);
         this.loading.set(false);
@@ -58,7 +110,9 @@ export class ProductFacade {
       this.saving.set(true);
       this.error.set(null);
 
-      this.productService.createProduct(request).subscribe({
+      this.productService.createProduct(request).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.products.update((list) => [...list, res.data!]);
@@ -80,7 +134,9 @@ export class ProductFacade {
       this.saving.set(true);
       this.error.set(null);
 
-      this.productService.updateProduct(id, request).subscribe({
+      this.productService.updateProduct(id, request).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: (res) => {
           if (res.data) {
             this.updateProductInList(res.data);
@@ -109,7 +165,9 @@ export class ProductFacade {
     if (!confirmed) return false;
 
     return new Promise((resolve) => {
-      this.productService.deleteProduct(product.id).subscribe({
+      this.productService.deleteProduct(product.id).pipe(
+        retry({ count: 2, delay: 1000 })
+      ).subscribe({
         next: () => {
           this.products.update((list) => list.filter((p) => p.id !== product.id));
           resolve(true);

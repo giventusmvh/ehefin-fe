@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal, OnInit, PLATFORM_ID } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, signal, OnInit, PLATFORM_ID, computed } from '@angular/core';
 import { isPlatformBrowser, AsyncPipe, DatePipe } from '@angular/common';
 import { DomSanitizer } from '@angular/platform-browser';
 import { Router } from '@angular/router';
@@ -36,8 +36,21 @@ export default class WorkplaceComponent implements OnInit {
   historyLoading = this.facade.historyLoading;
   userName = this.facade.userName;
   roleName = this.facade.roleName;
-  pendingSearchQuery = this.facade.pendingSearchQuery;
-  historySearchQuery = this.facade.historySearchQuery;
+  // Search queries with local state for input binding
+  private _pendingSearchInput = '';
+  private _historySearchInput = '';
+  
+  get pendingSearchInput() { return this._pendingSearchInput; }
+  set pendingSearchInput(value: string) {
+    this._pendingSearchInput = value;
+    this.facade.updatePendingSearch(value); // Triggers debounce
+  }
+  
+  get historySearchInput() { return this._historySearchInput; }
+  set historySearchInput(value: string) {
+    this._historySearchInput = value;
+    this.facade.updateHistorySearch(value); // Triggers debounce
+  }
 
   // UI-specific state
   note = '';
