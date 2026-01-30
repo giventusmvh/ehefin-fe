@@ -5,12 +5,13 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { LoanFacade } from '../loan.facade';
 import { LoanStatus } from '../../../../core/models';
 import { SecureImagePipe } from '../../../../shared/pipes';
+import { LocationMapComponent } from '../../../../shared/components/location-map/location-map.component';
 import { getImageUrl, openImageInNewTab } from '../../../../shared/utils';
 
 @Component({
   selector: 'app-loan-detail',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [CommonModule, RouterLink, DatePipe, CurrencyPipe, TitleCasePipe, SecureImagePipe, AsyncPipe],
+  imports: [CommonModule, RouterLink, DatePipe, CurrencyPipe, TitleCasePipe, SecureImagePipe, AsyncPipe, LocationMapComponent],
   templateUrl: './loan-detail.html',
 })
 export default class LoanDetailComponent implements OnInit {

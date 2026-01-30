@@ -35,6 +35,8 @@ export interface LoanApplication {
   requestedRate: number;
   status: LoanStatus;
   createdAt: string;
+  latitude?: string;
+  longitude?: string;
 }
 
 export interface LoanHistory {

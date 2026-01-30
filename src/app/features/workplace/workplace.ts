@@ -7,12 +7,13 @@ import { AuthService } from '../../core/services/auth.service';
 import { WorkplaceFacade } from './workplace.facade';
 import { LoanApplication, ApprovalHistoryItem } from '../../core/models';
 import { SecureImagePipe } from '../../shared/pipes';
+import { LocationMapComponent } from '../../shared/components/location-map/location-map.component';
 import { formatCurrency, getImageUrl, openImageInNewTab } from '../../shared/utils';
 
 @Component({
   selector: 'app-workplace',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [FormsModule, AsyncPipe, DatePipe, SecureImagePipe],
+  imports: [FormsModule, AsyncPipe, DatePipe, SecureImagePipe, LocationMapComponent],
   templateUrl: './workplace.html',
 })
 export default class WorkplaceComponent implements OnInit {
