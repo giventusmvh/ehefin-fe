@@ -115,6 +115,11 @@
               <div class="text-sm font-medium text-gray-900">{{ user().profile?.address || '-' }}</div>
             </div>
             <div>
+              <label class="block text-xs text-gray-400">Job Information</label>
+              <div class="text-sm font-medium text-gray-900 mb-1">{{ user().profile?.job || '-' }}</div>
+              <div class="text-xs text-gray-500">{{ user().profile?.companyName || '-' }}</div>
+            </div>
+            <div>
               <label class="block text-xs text-gray-400">Profile Status</label>
               <span 
                 class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium"
@@ -179,6 +184,44 @@
                   <img 
                     [src]="sanitize($any(src))" 
                     alt="NPWP" 
+                    class="w-full h-32 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+                    (click)="openImage($any(src))"
+                  />
+                }
+              } @else {
+                <div class="w-full h-32 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs italic">
+                  No Image
+                </div>
+              }
+            </div>
+
+            <!-- Selfie -->
+            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 flex flex-col items-center">
+              <span class="text-xs font-medium text-gray-500 mb-2">Selfie</span>
+              @if (user().profile?.selfieUrl) {
+                @if (getImageUrl(user().profile?.selfieUrl) | secureImage | async; as src) {
+                  <img 
+                    [src]="sanitize($any(src))" 
+                    alt="Selfie" 
+                    class="w-full h-32 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+                    (click)="openImage($any(src))"
+                  />
+                }
+              } @else {
+                <div class="w-full h-32 bg-gray-200 rounded flex items-center justify-center text-gray-400 text-xs italic">
+                  No Image
+                </div>
+              }
+            </div>
+
+            <!-- Salary Slip -->
+            <div class="border border-gray-200 rounded-lg p-4 bg-gray-50 flex flex-col items-center">
+              <span class="text-xs font-medium text-gray-500 mb-2">Salary Slip</span>
+              @if (user().profile?.salarySlipUrl) {
+                @if (getImageUrl(user().profile?.salarySlipUrl) | secureImage | async; as src) {
+                  <img 
+                    [src]="sanitize($any(src))" 
+                    alt="Salary Slip" 
                     class="w-full h-32 object-cover rounded mb-3 cursor-pointer hover:opacity-90 transition-opacity"
                     (click)="openImage($any(src))"
                   />

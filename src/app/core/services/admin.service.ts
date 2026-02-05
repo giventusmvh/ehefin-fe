@@ -2,7 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ApiResponse, User, Role, Permission, CreateUserRequest, UserBranch } from '../models';
+import { ApiResponse, User, Role, Permission, CreateUserRequest, UserBranch, UserPlafond } from '../models';
 
 @Injectable({ providedIn: 'root' })
 export class AdminService {
@@ -44,6 +44,14 @@ export class AdminService {
     return this.http.delete<ApiResponse<User>>(
       `${environment.apiUrl}/admin/users/${userId}/roles/${roleId}`
     );
+  }
+
+  getUserPlafond(userId: number): Observable<ApiResponse<UserPlafond>> {
+    return this.http.get<ApiResponse<UserPlafond>>(`${environment.apiUrl}/admin/users/${userId}/plafond`);
+  }
+
+  deactivateUserPlafond(userId: number): Observable<ApiResponse<void>> {
+    return this.http.patch<ApiResponse<void>>(`${environment.apiUrl}/admin/users/${userId}/plafond/deactivate`, {});
   }
 
   // Roles

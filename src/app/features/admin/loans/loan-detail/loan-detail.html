@@ -62,6 +62,16 @@
                <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Address</label>
                <p class="text-gray-900">{{ l.customerAddress || '-' }}</p>
              </div>
+             <div>
+               <label class="block text-xs font-medium text-gray-400 uppercase tracking-wider mb-1">Job Info (Snapshot)</label>
+               <div class="text-gray-900">
+                 @if (l.customerJob) {
+                   <span class="font-medium">{{ l.customerJob }}</span> at {{ l.customerCompanyName }}
+                 } @else {
+                   <span class="text-gray-400 italic">No job info captured</span>
+                 }
+               </div>
+             </div>
            </div>
         </div>
 
@@ -127,7 +137,48 @@
                            }
                        </div>
                    </div>
-               }
+                }
+            </div>
+            
+            <!-- Snapshot Documents (Selfie & Salary Slip) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 mt-6 border-t border-gray-100 pt-6">
+                 <!-- Selfie -->
+                 @if (loan()?.customerSelfiePath) {
+                     <div class="space-y-2">
+                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center">Selfie (Snapshot)</p>
+                         <div class="block relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-50">
+                             @if (getImageUrl(loan()?.customerSelfiePath!) | secureImage | async; as src) {
+                                <img [src]="sanitize(src)" alt="Selfie" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" (click)="openImage(src)">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                    <span class="text-white text-xs font-bold px-3 py-1 bg-black/50 rounded-full backdrop-blur-sm">View Full</span>
+                                </div>
+                             } @else {
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <div class="animate-spin w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"></div>
+                                </div>
+                             }
+                         </div>
+                     </div>
+                 }
+
+                 <!-- Salary Slip -->
+                 @if (loan()?.customerSalarySlipPath) {
+                     <div class="space-y-2">
+                         <p class="text-xs font-medium text-gray-500 uppercase tracking-wide text-center">Salary Slip (Snapshot)</p>
+                         <div class="block relative group cursor-pointer rounded-lg overflow-hidden border border-gray-200 aspect-[16/10] bg-gray-50">
+                             @if (getImageUrl(loan()?.customerSalarySlipPath!) | secureImage | async; as src) {
+                                <img [src]="sanitize(src)" alt="Salary Slip" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" (click)="openImage(src)">
+                                <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity pointer-events-none">
+                                    <span class="text-white text-xs font-bold px-3 py-1 bg-black/50 rounded-full backdrop-blur-sm">View Full</span>
+                                </div>
+                             } @else {
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <div class="animate-spin w-5 h-5 border-2 border-brand-500 border-t-transparent rounded-full"></div>
+                                </div>
+                             }
+                         </div>
+                     </div>
+                 }
             </div>
           </div>
         </div>

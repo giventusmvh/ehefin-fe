@@ -29,6 +29,26 @@ export interface UserProfile {
   bankName?: string | null;
   accountNumber?: string | null;
   accountHolderName?: string | null;
+  // Enhanced Profile Fields
+  job?: string;
+  companyName?: string;
+  selfieUrl?: string;
+  salarySlipUrl?: string;
+}
+
+export interface UserPlafond {
+  id: number;
+  originalAmount: number;
+  remainingAmount: number;
+  isActive: boolean;
+  assignedAt: string;
+  product?: {
+    id: number;
+    name: string;
+    amount: number;
+    tenor: number;
+    interestRate: number;
+  };
 }
 
 export interface User {

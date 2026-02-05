@@ -304,10 +304,20 @@
                     {{ selectedLoan()!.customerPhone }}
                  </div>
                  <div class="flex items-center gap-3 text-sm text-gray-600">
-                    <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
-                    {{ selectedLoan()!.customerNik }}
-                 </div>
-              </div>
+                     <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+                     {{ selectedLoan()!.customerNik }}
+                  </div>
+                  @if(selectedLoan()!.customerJob) {
+                    <div class="flex items-center gap-3 text-sm text-gray-600 mt-2 pt-2 border-t border-gray-100">
+                       <span class="font-medium text-xs text-brand-600 uppercase">Job Info</span>
+                    </div>
+                    <div class="flex items-center gap-3 text-sm text-gray-600">
+                       <span class="font-semibold">{{ selectedLoan()!.customerJob }}</span>
+                       <span class="text-gray-400">at</span>
+                       <span>{{ selectedLoan()!.customerCompanyName }}</span>
+                    </div>
+                  }
+               </div>
 
               <!-- Bank Account Info -->
               @if (selectedLoan()!.customerBankName || selectedLoan()!.customerAccountNumber) {
@@ -394,6 +404,36 @@
                         }
                       </div>
                       <span class="text-[10px] font-medium text-gray-500">NPWP</span>
+                    </div>
+                    <!-- Selfie -->
+                    <div class="text-center group">
+                      <div class="w-full aspect-video bg-gray-100 rounded-lg mb-1 overflow-hidden relative border border-gray-200">
+                         @if (selectedLoan()!.customerSelfiePath) {
+                           @if (getImageUrl(selectedLoan()!.customerSelfiePath!) | secureImage | async; as src) {
+                            <img [src]="sanitize(src)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" (click)="openImage(src)" />
+                           } @else {
+                            <div class="w-full h-full flex items-center justify-center"><div class="animate-spin w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full"></div></div>
+                           }
+                        } @else {
+                          <div class="w-full h-full flex items-center justify-center text-gray-300">-</div>
+                        }
+                      </div>
+                      <span class="text-[10px] font-medium text-gray-500">Selfie</span>
+                    </div>
+                    <!-- Salary Slip -->
+                    <div class="text-center group">
+                      <div class="w-full aspect-video bg-gray-100 rounded-lg mb-1 overflow-hidden relative border border-gray-200">
+                         @if (selectedLoan()!.customerSalarySlipPath) {
+                           @if (getImageUrl(selectedLoan()!.customerSalarySlipPath!) | secureImage | async; as src) {
+                            <img [src]="sanitize(src)" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-pointer" (click)="openImage(src)" />
+                           } @else {
+                            <div class="w-full h-full flex items-center justify-center"><div class="animate-spin w-4 h-4 border-2 border-brand-500 border-t-transparent rounded-full"></div></div>
+                           }
+                        } @else {
+                          <div class="w-full h-full flex items-center justify-center text-gray-300">-</div>
+                        }
+                      </div>
+                      <span class="text-[10px] font-medium text-gray-500">Salary Slip</span>
                     </div>
                   </div>
                 </div>

@@ -23,6 +23,11 @@ export interface LoanApplication {
   customerBankName?: string;
   customerAccountNumber?: string;
   customerAccountHolderName?: string;
+  // Snapshots (Naming matches API response)
+  customerJob?: string;
+  customerCompanyName?: string;
+  customerSelfiePath?: string;
+  customerSalarySlipPath?: string;
   // Backend may return flat fields OR nested objects
   productId?: number;
   productName?: string;

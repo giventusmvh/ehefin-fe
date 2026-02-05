@@ -19,5 +19,55 @@
     </div>
   } @else if (user()) {
     <app-user-detail-view [user]="user()!" />
+
+    @if (plafond()) {
+      <div class="mt-6 bg-white rounded-xl border border-gray-100 overflow-hidden shadow-sm">
+        <div class="px-4 md:px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+          <h3 class="text-lg font-semibold text-gray-900">Plafond Information</h3>
+          <span 
+            class="px-3 py-1 rounded-full text-sm font-medium border"
+            [class.bg-green-50]="plafond()!.isActive"
+            [class.text-green-700]="plafond()!.isActive"
+            [class.border-green-100]="plafond()!.isActive"
+            [class.bg-red-50]="!plafond()!.isActive"
+            [class.text-red-700]="!plafond()!.isActive"
+            [class.border-red-100]="!plafond()!.isActive"
+          >
+            {{ plafond()!.isActive ? 'Active' : 'Inactive' }}
+          </span>
+        </div>
+        <div class="p-4 md:p-6">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label class="block text-xs text-gray-400">Total Limit</label>
+              <div class="text-lg font-bold text-gray-900">{{ plafond()!.originalAmount | currency:'IDR':'symbol':'1.0-0' }}</div>
+            </div>
+            <div>
+              <label class="block text-xs text-gray-400">Remaining Limit</label>
+              <div class="text-lg font-bold text-gray-900">{{ plafond()!.remainingAmount | currency:'IDR':'symbol':'1.0-0' }}</div>
+            </div>
+          </div>
+
+          @if (plafond()!.isActive) {
+            <div class="mt-6 pt-6 border-t border-gray-100 flex justify-end">
+              <button 
+                (click)="deactivatePlafond()" 
+                [disabled]="loading()"
+                [class.opacity-50]="loading()"
+                class="px-4 py-2 bg-red-50 text-red-600 rounded-lg hover:bg-red-100 transition-colors font-medium border border-red-100 flex items-center gap-2"
+              >
+                @if (loading()) {
+                  <svg class="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                }
+                Deactivate Plafond
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    }
   }
 </div>
