@@ -7,6 +7,10 @@
     {
       "source": "/uploads/:path*",
       "destination": "http://34.51.234.182/uploads/:path*"
+    },
+    {
+      "source": "/((?!api|uploads|assets|favicon.ico).*)",
+      "destination": "/index.html"
     }
   ],
   "headers": [
