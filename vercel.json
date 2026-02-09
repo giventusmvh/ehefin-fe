@@ -1,16 +1,36 @@
 {
-  "rewrites": [
+  "version": 2,
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "framework": null,
+  "outputDirectory": ".",
+  "functions": {
+    "api/ssr.mjs": {
+      "memory": 1024,
+      "maxDuration": 30,
+      "includeFiles": "dist/ehefin-fe/**"
+    }
+  },
+  "routes": [
     {
-      "source": "/api/:path*",
-      "destination": "http://34.51.234.182/api/:path*"
+      "src": "/api/(.*)",
+      "dest": "http://34.51.234.182/api/$1"
     },
     {
-      "source": "/uploads/:path*",
-      "destination": "http://34.51.234.182/uploads/:path*"
+      "src": "/uploads/(.*)",
+      "dest": "http://34.51.234.182/uploads/$1"
     },
     {
-      "source": "/((?!api|uploads|assets|favicon.ico).*)",
-      "destination": "/index.html"
+      "src": "/assets/(.*)",
+      "dest": "/dist/ehefin-fe/browser/assets/$1"
+    },
+    {
+      "src": "/(.*\\.(js|css|ico|png|jpg|jpeg|svg|woff|woff2|ttf|eot))",
+      "dest": "/dist/ehefin-fe/browser/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/ssr"
     }
   ],
   "headers": [
