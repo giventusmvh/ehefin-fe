@@ -1,5 +1,5 @@
 {
-  "buildCommand": "npm run build",
+  "buildCommand": "npm run build && cp dist/ehefin-fe/browser/index.csr.html dist/ehefin-fe/browser/index.html",
   "outputDirectory": "dist/ehefin-fe/browser",
   "rewrites": [
     {
