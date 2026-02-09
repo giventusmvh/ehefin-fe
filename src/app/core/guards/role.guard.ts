@@ -14,12 +14,6 @@ export function roleGuard(allowedRoles: string[]): CanActivateFn {
       return true;
     }
 
-    // DEBUG: Log roles for troubleshooting
-    const userRoles = authService.roles();
-    console.log('[RoleGuard] User roles:', userRoles);
-    console.log('[RoleGuard] Allowed roles:', allowedRoles);
-    console.log('[RoleGuard] Has any role:', authService.hasAnyRole(allowedRoles));
-
     if (authService.hasAnyRole(allowedRoles)) {
       return true;
     }

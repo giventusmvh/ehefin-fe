@@ -13,6 +13,43 @@ const app = express();
 const angularApp = new AngularNodeAppEngine();
 
 /**
+ * Security headers middleware - OWASP best practices
+ * Protects against common web vulnerabilities
+ */
+app.use((req, res, next) => {
+  // Prevent clickjacking attacks
+  res.setHeader('X-Frame-Options', 'DENY');
+
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+
+  // XSS protection for older browsers
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+
+  // Referrer policy - prevent leaking sensitive URL info
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+
+  // Permissions policy (modern replacement for Feature-Policy)
+  res.setHeader('Permissions-Policy', 'geolocation=(self), microphone=(), camera=()');
+
+  // Content Security Policy
+  res.setHeader(
+    'Content-Security-Policy',
+    "default-src 'self'; " +
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
+      "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
+      "font-src 'self' https://fonts.gstatic.com; " +
+      "img-src 'self' data: blob: https:; " +
+      "connect-src 'self' https://*.tile.openstreetmap.org;"
+  );
+
+  // Strict Transport Security (for HTTPS environments)
+  res.setHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+
+  next();
+});
+
+/**
  * Example Express Rest API endpoints can be defined here.
  * Uncomment and define endpoints as necessary.
  *
