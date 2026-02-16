@@ -4,11 +4,11 @@
   "rewrites": [
     {
       "source": "/api/:path*",
-      "destination": "http://34.51.234.182/api/:path*"
+      "destination": "http://34.51.203.228/api/:path*"
     },
     {
       "source": "/uploads/:path*",
-      "destination": "http://34.51.234.182/uploads/:path*"
+      "destination": "http://34.51.203.228/uploads/:path*"
     },
     {
       "source": "/((?!api|uploads|assets|favicon.ico|.*\\..*).*)",

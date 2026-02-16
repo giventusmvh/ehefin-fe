@@ -1,11 +1,11 @@
 {
   "/api": {
-    "target": "http://34.51.234.182",
+    "target": "http://34.51.203.228",
     "secure": false,
     "changeOrigin": true
   },
   "/uploads": {
-    "target": "http://34.51.234.182",
+    "target": "http://34.51.203.228",
     "secure": false,
     "changeOrigin": true
   }
