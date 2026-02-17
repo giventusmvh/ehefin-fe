@@ -39,8 +39,8 @@ app.use((req, res, next) => {
       "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
       "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; " +
       "font-src 'self' https://fonts.gstatic.com; " +
-      "img-src 'self' data: blob: https: http://34.51.234.182; " +
-      "connect-src 'self' http://34.51.234.182 https://*.tile.openstreetmap.org;"
+      "img-src 'self' data: blob: https: http://34.51.203.228; " +
+      "connect-src 'self' http://34.51.203.228 https://*.tile.openstreetmap.org;"
   );
 
   // Strict Transport Security (for HTTPS environments)
